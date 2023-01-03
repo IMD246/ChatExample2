@@ -1,15 +1,17 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
+import 'StateManager/provider/get_list_provider.dart';
 import 'firebase_options.dart';
+import 'home_app.dart';
 import 'services/notification/notification.dart';
 import 'utilities/handle_file.dart';
 // import 'home_app.dart';
@@ -22,6 +24,8 @@ import 'utilities/handle_file.dart';
 // import 'presentation/utilities/handle_internet.dart';
 
 late NotificationService noti;
+late SharedPreferences sharedPref;
+late String? deviceToken;
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage event) async {}
 
 void _handleMessage(
@@ -61,14 +65,23 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await noti.initNotification();
-  final deviceToken = await FirebaseMessaging.instance.getToken();
   tz.initializeTimeZones();
 
   await Hive.initFlutter();
 
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  sharedPref = await SharedPreferences.getInstance();
+
+  deviceToken = await FirebaseMessaging.instance.getToken();
+
+  FirebaseMessaging.onBackgroundMessage(
+    _firebaseMessagingBackgroundHandler,
+  );
+
   runApp(
-    MyApp(deviceToken: deviceToken),
+    MyApp(
+      deviceToken: deviceToken,
+      sharedPref: sharedPref,
+    ),
   );
 }
 
@@ -76,8 +89,10 @@ class MyApp extends StatefulWidget {
   const MyApp({
     super.key,
     this.deviceToken,
+    required this.sharedPref,
   });
   final String? deviceToken;
+  final SharedPreferences sharedPref;
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -92,43 +107,8 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        StreamProvider<ConnectivityResult>(
-          create: (context) => Connectivity().onConnectivityChanged,
-          initialData: ConnectivityResult.none,
-        ),
-        // ChangeNotifierProvider<ConfigAppProvider>(
-        //   create: (context) => ConfigAppProvider(
-        //     sharedPref: widget.sharedPref,
-        //     env: env,
-        //     noti: noti,
-        //     navigatorKey: GlobalKey<NavigatorState>(),
-        //     deviceToken: widget.deviceToken,
-        //   ),
-        // ),
-        // ChangeNotifierProvider<ThemeProvider>(
-        //   create: (context) => ThemeProvider(
-        //     sharedPref: widget.sharedPref,
-        //   ),
-        // ),
-        // ChangeNotifierProvider<LanguageProvider>(
-        //   create: (context) => LanguageProvider(widget.sharedPref),
-        // ),
-      ],
-      builder: (context, child) {
-        return Container();
-        // return Consumer<ConnectivityResult>(
-        //   builder: (context, value, child) {
-        //     return FutureBuilder<bool>(
-        //       future: UtilHandlerInternet.checkInternet(result: value),
-        //       builder: (context, snapshot) {
-        //         bool isHaveInternet = snapshot.data ?? false;
-        //         return HomeApp(isHaveInternet: isHaveInternet);
-        //       },
-        //     );
-        //   },
-        // );
-      },
+      providers: getListRepositoryProvider(),
+      child: const HomeApp(),
     );
   }
 }

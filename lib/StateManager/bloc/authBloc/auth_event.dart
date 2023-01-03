@@ -1,14 +1,17 @@
-// // // ignore_for_file: public_member_api_docs, sort_constructors_first
-// // import 'package:testsocketchatapp/data/models/user_info.dart';
+import '../../../models/user_presence.dart';
+import '../../../models/user_profile.dart';
 
-// // abstract class AuthEvent {}
+abstract class AuthEvent {}
 
-// // class AuthEventLogin extends AuthEvent {}
+class AuthEventLoginByGoogle extends AuthEvent {}
 
-// // class AuthEventLoginWithToken extends AuthEvent {}
-// // class AuthEventLogOut extends AuthEvent {
-// //   UserInformation userInformation;
-// //   AuthEventLogOut({
-// //     required this.userInformation,
-// //   });
-// // }
+class AuthEventLogout extends AuthEvent {
+  final UserProfile userProfile;
+  final UserPresence userPresence;
+  AuthEventLogout({
+    required this.userProfile,
+    required this.userPresence,
+  });
+}
+
+class AuthEventInitialize extends AuthEvent {}

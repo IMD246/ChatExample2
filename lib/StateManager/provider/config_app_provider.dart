@@ -1,30 +1,20 @@
-// import 'dart:developer';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// import 'package:flutter/material.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:socket_io_client/socket_io_client.dart';
+import '../../services/notification/notification.dart';
 
-// import '../../../data/models/chat_user_and_presence.dart';
-// import '../../../data/models/environment.dart';
-// import '../../../data/models/user_info.dart';
-// import '../../../router/routers.dart';
-// import '../../views/messageChat/message_chat_screen.dart';
-// import '../notification/notification.dart';
-
-// class ConfigAppProvider extends ChangeNotifier {
-//   final Environment env;
-//   NotificationService noti;
-//   final GlobalKey<NavigatorState> navigatorKey;
-//   final SharedPreferences sharedPref;
-//   final String? deviceToken;
-//   int count = 0;
-//   ConfigAppProvider({
-//     required this.env,
-//     required this.noti,
-//     required this.navigatorKey,
-//     required this.sharedPref,
-//     required this.deviceToken,
-//   });
+class ConfigAppProvider extends ChangeNotifier {
+  NotificationService noti;
+  final GlobalKey<NavigatorState> navigatorKey;
+  final SharedPreferences sharedPref;
+  final String? deviceToken;
+  int count = 0;
+  ConfigAppProvider({
+    required this.noti,
+    required this.navigatorKey,
+    required this.sharedPref,
+    required this.deviceToken,
+  });
 //   void handlerNotification({
 //     required BuildContext context,
 //     required List<ChatUserAndPresence> listChatUser,
@@ -110,3 +100,4 @@
 //     }
 //   }
 // }
+}

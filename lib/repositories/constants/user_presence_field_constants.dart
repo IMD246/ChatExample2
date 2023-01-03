@@ -1,5 +1,5 @@
 class UserPresenceFieldConstants {
-  static final String collectionName = "user_presence";
-  static final String presenceField = 'presence';
-  static final String stampTimeField = 'stampTimeField';
+  static const String collectionName = "user_presence";
+  static const String presenceField = 'presence';
+  static const String stampTimeField = 'stamp_time';
 }
