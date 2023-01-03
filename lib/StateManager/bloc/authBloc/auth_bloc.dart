@@ -95,16 +95,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             await remoteUserPresenceRepository.updatePresenceFieldById(
               userID: userProfile.id!,
             );
-            final getUserPresence =
-                await remoteUserPresenceRepository.getUserPresenceById(
-              userID: userProfile.id!,
-            );
-            log(getUserPresence?.id ?? "".toString());
+           
             emit(
               AuthStateLoggedIn(
                 isLoading: false,
                 userProfile: userProfile,
-                userPresence: getUserPresence,
               ),
             );
           } else {
@@ -190,17 +185,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             await remoteUserPresenceRepository.updatePresenceFieldById(
               userID: userProfile.id!,
             );
-
-            final getUserPresence =
-                await remoteUserPresenceRepository.getUserPresenceById(
-              userID: userProfile.id!,
-            );
-
             emit(
               AuthStateLoggedIn(
                 isLoading: false,
                 userProfile: userProfile,
-                userPresence: getUserPresence,
               ),
             );
           } else {
@@ -223,7 +211,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             AuthStateLoggedIn(
               isLoading: true,
               userProfile: event.userProfile,
-              userPresence: event.userPresence,
             ),
           );
           await firebaseAuthProvider.logout();
@@ -235,7 +222,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             AuthStateLoggedIn(
               isLoading: false,
               userProfile: event.userProfile,
-              userPresence: event.userPresence,
             ),
           );
         }

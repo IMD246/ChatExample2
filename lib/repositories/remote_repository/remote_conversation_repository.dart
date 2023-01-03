@@ -21,33 +21,33 @@ class RemoteConversationRepository implements ConversationRepository {
     return await collectionConversationRef
         .where(
           ConversationFieldConstants.listUser,
-          arrayContains: [userId],
+          arrayContains: userId,
         )
         .orderBy(
-          ConversationFieldConstants.lastText,
+          ConversationFieldConstants.stampTimeLastText,
           descending: true,
         )
         .get()
         .then(
-          (value) async {
-            if (value.size == 0 || value.docs.isEmpty) {
-              return null;
-            }
-            final ReceivePort receivePort = ReceivePort();
-            final isolate = await Isolate.spawn(
-              _parsedListConversation,
-              [
-                receivePort.sendPort,
-                value.docs,
-              ],
-            );
-            List<Conversation>? data = await receivePort.first;
-            isolate.kill(
-              priority: Isolate.immediate,
-            );
-            return data;
-          },
+      (value) async {
+        if (value.size == 0 || value.docs.isEmpty) {
+          return null;
+        }
+        final ReceivePort receivePort = ReceivePort();
+        final isolate = await Isolate.spawn(
+          _parsedListConversation,
+          [
+            receivePort.sendPort,
+            value.docs,
+          ],
         );
+        List<Conversation>? data = await receivePort.first;
+        isolate.kill(
+          priority: Isolate.immediate,
+        );
+        return data ?? [];
+      },
+    );
   }
 
   @override

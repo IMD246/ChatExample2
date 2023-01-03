@@ -8,6 +8,7 @@ import 'StateManager/bloc/authBloc/auth_bloc.dart';
 import 'StateManager/bloc/authBloc/auth_state.dart';
 import 'StateManager/provider/theme_provider.dart';
 import 'extensions/localization.dart';
+import 'views/chat/chat_screen.dart';
 import 'views/welcome/login_screen.dart';
 
 class App extends StatefulWidget {
@@ -51,22 +52,8 @@ class _AppState extends State<App> {
                 body: LoginScreen(),
               );
             } else if (state is AuthStateLoggedIn) {
-              // return ChatScreen(
-              //   userInformation: state.userInformation,
-              // );
-              return Scaffold(
-                body: Column(
-                  children: [
-                    const Spacer(),
-                    textWidget(
-                      text: (state.userPresence?.presence ?? "null").toString(),
-                    ),
-                    textWidget(
-                      text: state.userProfile.fullName,
-                    ),
-                    const Spacer(),
-                  ],
-                ),
+              return ChatScreen(
+                userProfile: state.userProfile,
               );
             } else {
               return Scaffold(

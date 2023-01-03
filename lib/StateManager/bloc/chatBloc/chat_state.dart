@@ -1,54 +1,37 @@
-// import 'package:equatable/equatable.dart';
-// import 'package:rxdart/rxdart.dart';
-// import 'package:testsocketchatapp/data/models/chat_user_and_presence.dart';
-// import 'package:testsocketchatapp/data/repositories/user_repository.dart';
-// import 'package:testsocketchatapp/presentation/services/bloc/chatBloc/chat_manager.dart';
+import '../../../models/conversation.dart';
+import '../../../models/user_profile.dart';
 
-// abstract class ChatState {
-//   final ChatManager chatManager;
-//   ChatState({
-//     required this.chatManager,
-//   });
-// }
+abstract class ChatState {
+  final UserProfile userProfile;
+  ChatState({
+    required this.userProfile,
+  });
+}
 
-// class BackToWaitingChatState extends ChatState with EquatableMixin {
-//   final BehaviorSubject<List<ChatUserAndPresence>> listChatController;
-//   BackToWaitingChatState({
-//     required this.listChatController,
-//     required ChatManager chatManager,
-//   }) : super(chatManager: chatManager);
+class BackToWaitingChatState extends ChatState {
+  BackToWaitingChatState({
+    required UserProfile userProfile,
+  }) : super(userProfile: userProfile);
+}
 
-//   @override
-//   List<Object?> get props => [chatManager];
-// }
-// class InitializeChatState extends ChatState with EquatableMixin {
-//   final BehaviorSubject<List<ChatUserAndPresence>> listChatController;
-//   InitializeChatState({
-//     required this.listChatController,
-//     required ChatManager chatManager,
-//   }) : super(chatManager: chatManager);
+class InitializeChatState extends ChatState {
+  InitializeChatState({
+    required UserProfile userProfile,
+  }) : super(userProfile: userProfile);
+}
 
-//   @override
-//   List<Object?> get props => [chatManager];
-// }
-// class JoinedChatState extends ChatState {
-//   final ChatUserAndPresence chatUserAndPresence;
-//   JoinedChatState({
-//     required this.chatUserAndPresence,
-//     required ChatManager chatManager,
-//   }) : super(chatManager: chatManager);
-// }
+class JoinedChatState extends ChatState {
+  final Conversation conversation;
+  JoinedChatState({
+    required this.conversation,
+    required super.userProfile,
+  });
+}
 
-// class WentToSettingMenuChatState extends ChatState {
-//   WentToSettingMenuChatState({
-//     required ChatManager chatManager,
-//   }) : super(chatManager: chatManager);
-// }
+class WentToSettingMenuChatState extends ChatState {
+  WentToSettingMenuChatState({required super.userProfile});
+}
 
-// class WentToSearchChatState extends ChatState {
-//   final UserRepository userRepository;
-//   WentToSearchChatState({
-//     required this.userRepository,
-//     required ChatManager chatManager,
-//   }) : super(chatManager: chatManager);
-// }
+class WentToSearchChatState extends ChatState {
+  WentToSearchChatState({required super.userProfile});
+}

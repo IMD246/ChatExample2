@@ -27,11 +27,12 @@ class RemoteStorageRepository implements StorageRepository {
   }
 
   @override
-  Future<bool> uploadFile(
-      {required File file,
-      required String filePath,
-      required String fileName,
-      SettableMetadata? settableMetaData}) async {
+  Future<bool> uploadFile({
+    required File file,
+    required String filePath,
+    required String fileName,
+    SettableMetadata? settableMetaData,
+  }) async {
     try {
       final refPath = "$filePath/$fileName";
       await storage

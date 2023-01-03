@@ -14,14 +14,6 @@ import 'firebase_options.dart';
 import 'home_app.dart';
 import 'services/notification/notification.dart';
 import 'utilities/handle_file.dart';
-// import 'home_app.dart';
-// import 'presentation/services/notification/notification.dart';
-// import 'presentation/services/provider/config_app_provider.dart';
-// import 'presentation/services/provider/internet_provider.dart';
-// import 'presentation/services/provider/language_provider.dart';
-// import 'presentation/services/provider/theme_provider.dart';
-// import 'presentation/utilities/handle_file.dart';
-// import 'presentation/utilities/handle_internet.dart';
 
 late NotificationService noti;
 late SharedPreferences sharedPref;
