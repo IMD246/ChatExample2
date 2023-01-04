@@ -3,15 +3,13 @@ import 'dart:convert';
 class UserProfile {
   String? id;
   final String email;
-  final String fullName;
-  String? urlImage;
+  String fullName;
   String? messagingToken;
   bool isEmailVerified;
   UserProfile({
     this.id,
     required this.email,
     required this.fullName,
-    this.urlImage,
     this.messagingToken,
     required this.isEmailVerified,
   });
@@ -20,7 +18,6 @@ class UserProfile {
       'id_user': id,
       'email': email,
       'full_name': fullName,
-      'url_image': urlImage,
       'user_messaging_token': messagingToken,
       'is_email_verified': isEmailVerified
     };
@@ -31,7 +28,6 @@ class UserProfile {
       id: id,
       email: map['email'],
       fullName: map['full_name'] as String,
-      urlImage: map['url_image'] ?? "",
       messagingToken: map['user_messaging_token'] != null
           ? map['user_messaging_token'] as String
           : null,
@@ -46,6 +42,6 @@ class UserProfile {
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, email: $email, fullName: $fullName, urlImage: $urlImage, messagingToken: $messagingToken, isEmailVerified: $isEmailVerified)';
+    return 'UserProfile(id: $id, email: $email, fullName: $fullName messagingToken: $messagingToken, isEmailVerified: $isEmailVerified)';
   }
 }

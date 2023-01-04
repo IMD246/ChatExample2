@@ -1,22 +1,24 @@
-// // import '../../../../data/models/user_info.dart';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:file_picker/file_picker.dart';
 
-// // abstract class SettingEvent{}
-// // class BackToMenuSettingEvent extends SettingEvent {
-// //   final UserInformation userInformation;
-// //   BackToMenuSettingEvent({
-// //     required this.userInformation,
-// //   });
-// // }
-// // class GoToUpdateInfoSettingEvent extends SettingEvent {
-// //   final UserInformation userInformation;
-// //   GoToUpdateInfoSettingEvent({
-// //     required this.userInformation,
-// //   });
-// // }
+import '../../../models/user_profile.dart';
 
-// // class GoToUpdateThemeModeSettingEvent extends SettingEvent {
-// //   final UserInformation userInformation;
-// //   GoToUpdateThemeModeSettingEvent({
-// //     required this.userInformation,
-// //   });
-// // }
+abstract class SettingEvent {}
+
+class BackToMenuSettingEvent extends SettingEvent {
+  final UserProfile userProfile;
+  BackToMenuSettingEvent({
+    required this.userProfile,
+  });
+}
+
+class GoToUpdateInfoSettingEvent extends SettingEvent {}
+
+class GoToUpdateThemeModeSettingEvent extends SettingEvent {}
+
+class UpdateImageSettingEvent extends SettingEvent {
+  final FilePickerResult filePickerResult;
+  UpdateImageSettingEvent({
+    required this.filePickerResult,
+  });
+}

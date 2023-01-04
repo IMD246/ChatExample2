@@ -12,19 +12,21 @@ import '../../StateManager/provider/user_presence_provider.dart';
 import '../../StateManager/provider/user_profile_provider.dart';
 import '../../models/user_profile.dart';
 import '../../widget/animated_switcher_widget.dart';
-import 'components/body_chat_screen.dart';
+import '../searchChat/search_chat_page.dart';
+import '../setting/components/setting_screen.dart';
+import 'components/body_conversation_screen.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({
+class ConversationScreen extends StatefulWidget {
+  const ConversationScreen({
     Key? key,
     required this.userProfile,
   }) : super(key: key);
   final UserProfile userProfile;
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<ConversationScreen> createState() => _ConversationScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ConversationScreenState extends State<ConversationScreen> {
   int count = 0;
   @override
   void initState() {
@@ -57,12 +59,13 @@ class _ChatScreenState extends State<ChatScreen> {
           // if (state is InitializeChatState) {
           //   configAppProvider.handlerNotification(
           //     context: context,
-          //     listChatUser: state.chatManager.listChat,
-          //     socket: state.chatManager.socket,
-          //     userInformation: state.chatManager.userInformation,
+          //     userInformation: state.userProfile,
           //   );
           // }
-          _listeningState(context: context, state: state);
+          _listeningState(
+            context: context,
+            state: state,
+          );
         },
         builder: (context, state) {
           return AnimatedSwitcherWidget(
@@ -74,12 +77,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget dynamicScreen(ChatState state) {
-    if (state is BackToWaitingChatState) {
-      return BodyChatScreen(
-        userProfile: state.userProfile,
-      );
-    } else if (state is InitializeChatState) {
-      return BodyChatScreen(
+    if (state is BackToWaitingChatState || state is InitializeChatState) {
+      return BodyConversationScreen(
         userProfile: state.userProfile,
       );
     } else {
@@ -112,39 +111,37 @@ class _ChatScreenState extends State<ChatScreen> {
       //       );
       // });
     } else if (state is WentToSearchChatState) {
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) {
-      //       return SearchFriendScreen(
-      //         userRepository: state.userRepository,
-      //         userInformation: state.chatManager.userInformation,
-      //         socket: state.chatManager.socket,
-      //       );
-      //     },
-      //   ),
-      // ).then((value) {
-      //   context.read<ChatBloc>().add(
-      //         BackToWaitingChatEvent(),
-      //       );
-      // });
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return SearchChatPage(
+              ownerUserProfile: state.userProfile,
+            );
+          },
+        ),
+      ).then((value) {
+        context.read<ChatBloc>().add(
+              BackToWaitingChatEvent(),
+            );
+      });
     } else if (state is WentToSettingMenuChatState) {
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) {
-      //       return SettingScreen(
-
-      //       );
-      //     },
-      //   ),
-      // ).then((value) {
-      //   context.read<ChatBloc>().add(
-      //         BackToWaitingChatEvent(
-      //           userInformation: state.chatManager.userInformation,
-      //         ),
-      //       );
-      // });
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return SettingScreen(
+              userProfile: state.userProfile,
+            );
+          },
+        ),
+      ).then(
+        (value) {
+          context.read<ChatBloc>().add(
+                BackToWaitingChatEvent(),
+              );
+        },
+      );
     }
     // #endregion
   }

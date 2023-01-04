@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_basic_utilities/flutter_basic_utilities.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
@@ -12,8 +11,8 @@ import '../../../models/user_profile.dart';
 import '../../../widget/observer.dart';
 import 'list_conversation.dart';
 
-class BodyChatScreen extends StatelessWidget {
-  const BodyChatScreen({
+class BodyConversationScreen extends StatelessWidget {
+  const BodyConversationScreen({
     super.key,
     required this.userProfile,
   });
@@ -26,17 +25,27 @@ class BodyChatScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.green,
         automaticallyImplyLeading: false,
-        leading: GestureDetector(
-          onTap: () {
-            chatBLoc.add(
-              GoToMenuSettingEvent(),
+        leading: Observer<String?>(
+          stream: chatBLoc.remoteStorageRepository
+              .getFile(
+                filePath: "userProfile",
+                fileName: chatBLoc.userProfile.id!,
+              )
+              .asStream(),
+          onSuccess: (context, data) {
+            return GestureDetector(
+              onTap: () {
+                chatBLoc.add(
+                  GoToMenuSettingEvent(),
+                );
+              },
+              child: circleImageWidget(
+                urlImage: data ??
+                    "https://i.stack.imgur.com/l60Hf.png",
+                radius: 20.h,
+              ),
             );
           },
-          child: circleImageWidget(
-            urlImage:
-                userProfile.urlImage ?? "https://i.stack.imgur.com/l60Hf.png",
-            radius: 20.h,
-          ),
         ),
         title: textWidget(
           text: context.loc.chat,
@@ -68,12 +77,11 @@ class BodyChatScreen extends StatelessWidget {
               height: 8.h,
             ),
             searchWidget(context),
-            Observer<List<Conversation>?>(
+            Observer<Iterable<Conversation>?>(
               stream: chatBLoc.remoteConversationRepository
                   .getConversationsByUserId(
-                    userId: userProfile.id!,
-                  )
-                  .asStream(),
+                userId: userProfile.id!,
+              ),
               onSuccess: (context, data) {
                 final listConversation = data;
                 if (listConversation == null || listConversation.isEmpty) {
@@ -103,15 +111,13 @@ class BodyChatScreen extends StatelessWidget {
     );
   }
 
-  Widget searchWidget(
-    BuildContext context,
-  ) {
+  Widget searchWidget(BuildContext context) {
     return Center(
       child: InkWell(
         onTap: () {
-          BlocProvider.of<ChatBloc>(context).add(
-            GoToSearchFriendChatEvent(),
-          );
+          context.read<ChatBloc>().add(
+                GoToSearchFriendChatEvent(),
+              );
         },
         borderRadius: BorderRadius.circular(20.w),
         child: Container(

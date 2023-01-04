@@ -1,38 +1,55 @@
-// import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:testsocketchatapp/data/models/user_info.dart';
-// import 'package:testsocketchatapp/presentation/services/bloc/settingBloc/setting_event.dart';
-// import 'package:testsocketchatapp/presentation/services/bloc/settingBloc/setting_manager.dart';
-// import 'package:testsocketchatapp/presentation/services/bloc/settingBloc/setting_state.dart';
+import 'dart:io';
 
-// class SettingBloc extends Bloc<SettingEvent, SettingState> {
-//   final UserInformation userInformation;
-//   final SettingManager settingManager;
-  
-//   SettingBloc({
-//     required this.userInformation,
-//     required this.settingManager,
-//   }) : super(
-//           InsideSettingState(
-//             userInformation: userInformation,
-//           ),
-//         ) {
-//     on<BackToMenuSettingEvent>(
-//       (event, emit) {
-//         emit(
-//           InsideSettingState(
-//             userInformation: event.userInformation,
-//           ),
-//         );
-//       },
-//     );
-//     on<GoToUpdateInfoSettingEvent>(
-//       (event, emit) {
-//         emit(
-//           InsideUpdateInfoState(
-//             userInformation: event.userInformation,
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../models/user_profile.dart';
+import '../../../repositories/remote_repository/remote_storage_repository.dart';
+import 'setting_event.dart';
+import 'setting_state.dart';
+
+class SettingBloc extends Bloc<SettingEvent, SettingState> {
+  final UserProfile userProfile;
+  final RemoteStorageRepository remoteStorageRepository;
+  SettingBloc({
+    required this.userProfile,
+    required this.remoteStorageRepository,
+  }) : super(
+          InsideSettingState(
+            userProfile: userProfile,
+          ),
+        ) {
+    on<BackToMenuSettingEvent>(
+      (event, emit) {
+        emit(
+          InsideSettingState(
+            userProfile: event.userProfile,
+          ),
+        );
+      },
+    );
+    on<GoToUpdateInfoSettingEvent>(
+      (event, emit) {
+        emit(
+          InsideUpdateInfoState(
+            userProfile: userProfile,
+          ),
+        );
+      },
+    );
+    on<UpdateImageSettingEvent>(
+      (event, emit) async {
+        final getFile = event.filePickerResult.files.first;
+        await remoteStorageRepository.uploadFile(
+          file: File(getFile.path!),
+          filePath: "userProfile",
+          fileName: userProfile.id!,
+        );
+        emit(
+          InsideSettingState(
+            userProfile: userProfile,
+          ),
+        );
+      },
+    );
+  }
+}

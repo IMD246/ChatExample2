@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../extensions/google_sign_in_extension.dart';
@@ -10,7 +9,6 @@ import '../../../repositories/remote_repository/remote_storage_repository.dart';
 import '../../../repositories/remote_repository/remote_user_presence_repository.dart';
 import '../../../repositories/remote_repository/remote_user_profile_repository.dart';
 import '../../../services/firebaseAuth/firebase_auth_provider.dart';
-import '../../../utilities/handle_file.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -65,22 +63,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               fileName: userProfile!.id!,
             );
 
-            if (getUrlImageFromStorage != null) {
-              userProfile.urlImage = getUrlImageFromStorage;
-            } else {
-              final getFile = await UtilsDownloadFile.downloadFile(
-                getCurrentUser.photoURL ?? "",
-                getCurrentUser.uid,
-              );
+            if (getUrlImageFromStorage == null) {
               await remoteStorageRepository.uploadFile(
                 filePath: userProfilePathName,
                 fileName: getCurrentUser.uid,
                 file: File(
-                  getFile ?? "",
+                  getCurrentUser.photoURL ?? "",
                 ),
               );
             }
-
             if (userProfile.messagingToken != tokenMessaging) {
               //update token messaging for userProfile
               await remoteUserProfileRepository.updateUserProfile(
@@ -95,7 +86,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             await remoteUserPresenceRepository.updatePresenceFieldById(
               userID: userProfile.id!,
             );
-           
+
             emit(
               AuthStateLoggedIn(
                 isLoading: false,
@@ -140,36 +131,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             userProfile = await remoteUserProfileRepository.getUserProfileById(
               userID: getSignInData.uid,
             );
+
             const userProfilePathName = "userProfile";
             final getUrlImageFromStorage =
                 await remoteStorageRepository.getFile(
               filePath: userProfilePathName,
               fileName: userProfile!.id!,
             );
-            if (getUrlImageFromStorage != null) {
-              userProfile.urlImage = getUrlImageFromStorage;
-            } else {
-              final getFile = await UtilsDownloadFile.downloadFile(
-                getSignInData.photoURL ?? "",
-                getSignInData.uid,
-              );
+            if (getUrlImageFromStorage == null) {
               await remoteStorageRepository.uploadFile(
                 filePath: userProfilePathName,
                 fileName: getSignInData.uid,
                 file: File(
-                  getFile ?? "",
-                ),
-                settableMetaData: SettableMetadata(
-                  contentType: 'image/jpeg,',
+                  getSignInData.photoURL ?? "",
                 ),
               );
-              final getUrlImageFromStorage =
-                  await remoteStorageRepository.getFile(
-                filePath: userProfilePathName,
-                fileName: userProfile.id!,
-              );
-              userProfile.urlImage = getUrlImageFromStorage;
             }
+
             if (userProfile.messagingToken != tokenMessaging) {
               //update token messaging for userProfile
               await remoteUserProfileRepository.updateUserProfile(

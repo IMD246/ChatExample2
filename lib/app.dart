@@ -8,7 +8,7 @@ import 'StateManager/bloc/authBloc/auth_bloc.dart';
 import 'StateManager/bloc/authBloc/auth_state.dart';
 import 'StateManager/provider/theme_provider.dart';
 import 'extensions/localization.dart';
-import 'views/chat/chat_screen.dart';
+import 'views/chat/conversation_screen.dart';
 import 'views/welcome/login_screen.dart';
 
 class App extends StatefulWidget {
@@ -52,7 +52,7 @@ class _AppState extends State<App> {
                 body: LoginScreen(),
               );
             } else if (state is AuthStateLoggedIn) {
-              return ChatScreen(
+              return ConversationScreen(
                 userProfile: state.userProfile,
               );
             } else {

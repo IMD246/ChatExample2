@@ -1,19 +1,23 @@
-// import '../../../../data/models/user_info.dart';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import '../../../models/user_profile.dart';
 
-// abstract class SettingState {}
+abstract class SettingState {
+  final UserProfile userProfile;
+  SettingState({
+    required this.userProfile,
+  });
+}
 
-// class InsideSettingState extends SettingState {
-//   final UserInformation userInformation;
-//   InsideSettingState({required this.userInformation});
-// }
+class InsideSettingState extends SettingState {
+  InsideSettingState({required super.userProfile});
 
-// class InsideUpdateInfoState extends SettingState {
-//   final UserInformation userInformation;
-//   InsideUpdateInfoState({
-//     required this.userInformation,
-//   });
-// }
-// class InsideSearchState extends SettingState {
-//   final UserInformation userInformation;
-//   InsideSearchState({required this.userInformation});
-// }
+}
+
+class InsideUpdateInfoState extends SettingState {
+  InsideUpdateInfoState({required super.userProfile});
+ 
+}
+
+class InsideSearchState extends SettingState {
+  InsideSearchState({required super.userProfile});
+}

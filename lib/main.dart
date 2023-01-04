@@ -50,7 +50,7 @@ Future<void> setupInteractedMessage() async {
   });
 }
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   noti = NotificationService();
   await Firebase.initializeApp(

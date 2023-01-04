@@ -19,6 +19,7 @@
     "wrong_password_error" : "Lỗi sai mật khẩu",
     "wrong_password" : "Sai mật khẩu",   
     "generic_error" : "Lỗi chung",
+    "update_user_profile":"Cập Nhật Thông Tin",
     "auth_error" : "Lỗi quyền",   
     "verification_email_error" : "Lỗi xác thực email",
     "reset_password_dialog" : "Hộp thoại đặt lại mật khẩu",

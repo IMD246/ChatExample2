@@ -340,7 +340,7 @@ packages:
     description:
       path: "modules/flutter-basic-utilities"
       ref: main
-      resolved-ref: "1c051740ed4007a6860b0083c572c915bc544ae2"
+      resolved-ref: "87f3361a1d8edf22c0164f1ea760b4ad6643c25e"
       url: "https://github.com/IMD246/Flutter_Basic_Utilities.git"
     source: git
     version: "0.0.1"

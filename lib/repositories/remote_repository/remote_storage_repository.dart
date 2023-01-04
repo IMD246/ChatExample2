@@ -1,6 +1,7 @@
+import 'dart:developer';
 import 'dart:io';
 
-import 'package:file_picker/src/platform_file.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import '../interface_repository/storage_repository.dart';
@@ -47,15 +48,8 @@ class RemoteStorageRepository implements StorageRepository {
         },
       );
     } on FirebaseException catch (e) {
-      throw e;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(
-      //     content: Text(
-      //       'Upload Image Failed',
-      //       textAlign: TextAlign.center,
-      //     ),
-      //   ),
-      // );
+      log(e.toString());
+      return false;
     }
     return false;
   }

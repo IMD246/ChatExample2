@@ -37,7 +37,10 @@ class _ItemConversationState extends State<ItemConversation> {
   }
 
   String _handleMessageChat(
-      BuildContext context, ChatBloc chatBloc, String conversationUserId) {
+    BuildContext context,
+    ChatBloc chatBloc,
+    String conversationUserId,
+  ) {
     if (conversationUserId != "") {
       if (conversationUserId == chatBloc.userProfile.id) {
         return "${context.loc.you}: ";
@@ -72,20 +75,21 @@ class _ItemConversationState extends State<ItemConversation> {
           alignment: AlignmentDirectional.bottomCenter,
           children: [
             Observer<String?>(
-              onSuccess: (context, data) {
-                return circleImageWidget(
-                  urlImage: data != null
-                      ? "https://i.stack.imgur.com/l60Hf.png"
-                      : data!,
-                  radius: 20.w,
-                );
-              },
               stream: chatBloc.remoteStorageRepository
                   .getFile(
                     filePath: "userProfile",
                     fileName: conversationUserId,
                   )
                   .asStream(),
+              onLoading: (context) {
+                return const Text("");
+              },
+              onSuccess: (context, data) {
+                return circleImageWidget(
+                  urlImage: data ?? "https://i.stack.imgur.com/l60Hf.png",
+                  radius: 20.w,
+                );
+              },
             ),
             Observer<UserPresence?>(
               stream: chatBloc.remoteUserPresenceRepository
@@ -93,8 +97,14 @@ class _ItemConversationState extends State<ItemConversation> {
                     userID: conversationUserId,
                   )
                   .asStream(),
+              onLoading: (context) {
+                return const Text("");
+              },
               onSuccess: (context, data) {
-                if (data != null || data!.presence == false) {
+                if (data == null) {
+                  return const Text("");
+                }
+                if (data.presence == false) {
                   return offlineIcon(
                     text: differenceInCalendarPresence(
                       data.stampTime,
@@ -103,7 +113,6 @@ class _ItemConversationState extends State<ItemConversation> {
                 }
                 return onlineIcon();
               },
-              onLoading: null,
             ),
           ],
         ),
@@ -111,12 +120,14 @@ class _ItemConversationState extends State<ItemConversation> {
           stream: chatBloc.remoteUserProfileRepository
               .getUserProfileById(userID: conversationUserId)
               .asStream(),
+          onLoading: (context) {
+            return const Text("");
+          },
           onSuccess: (context, data) {
             return textWidget(
               text: data?.fullName ?? "Unknown",
             );
           },
-          onLoading: null,
         ),
         subtitle: Row(
           children: [

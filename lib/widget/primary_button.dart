@@ -1,0 +1,37 @@
+import 'package:flutter/material.dart';
+
+import '../constants/constant.dart';
+
+class PrimaryButton extends StatelessWidget {
+  const PrimaryButton({
+    Key? key,
+    required this.text,
+    required this.press,
+    required this.context,
+    this.color = kPrimaryColor,
+    this.width = double.infinity,
+    this.padding = const EdgeInsets.all(kDefaultPadding * 0.75),
+  }) : super(key: key);
+  final BuildContext context;
+  final String text;
+  final VoidCallback press;
+  final Color color;
+  final EdgeInsets padding;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialButton(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(40)),
+      ),
+      padding: padding,
+      color: color,
+      minWidth: width,
+      onPressed: press,
+      child: Text(
+        text,
+      ),
+    );
+  }
+}

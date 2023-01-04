@@ -1,7 +1,7 @@
 import '../../models/conversation.dart';
 
 abstract class ConversationRepository {
-  Future<List<Conversation>?> getConversationsByUserId({
+  Stream<Iterable<Conversation>?> getConversationsByUserId({
     required String userId,
   });
   Future<void> createConversation({

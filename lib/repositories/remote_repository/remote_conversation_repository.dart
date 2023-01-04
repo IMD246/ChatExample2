@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:isolate';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,10 +16,10 @@ class RemoteConversationRepository implements ConversationRepository {
     );
   }
   @override
-  Future<List<Conversation>?> getConversationsByUserId({
+  Stream<Iterable<Conversation>?> getConversationsByUserId({
     required String userId,
-  }) async {
-    return await collectionConversationRef
+  }) {
+    return collectionConversationRef
         .where(
           ConversationFieldConstants.listUser,
           arrayContains: userId,
@@ -27,27 +28,18 @@ class RemoteConversationRepository implements ConversationRepository {
           ConversationFieldConstants.stampTimeLastText,
           descending: true,
         )
-        .get()
-        .then(
-      (value) async {
-        if (value.size == 0 || value.docs.isEmpty) {
-          return null;
-        }
-        final ReceivePort receivePort = ReceivePort();
-        final isolate = await Isolate.spawn(
-          _parsedListConversation,
-          [
-            receivePort.sendPort,
-            value.docs,
-          ],
+        .snapshots()
+        .map((value) {
+      if (value.size == 0 || value.docs.isEmpty) {
+        return null;
+      }
+      return value.docs.map((e) {
+        return _parsedConversation(
+          e.data(),
+          e.id,
         );
-        List<Conversation>? data = await receivePort.first;
-        isolate.kill(
-          priority: Isolate.immediate,
-        );
-        return data ?? [];
-      },
-    );
+      });
+    });
   }
 
   @override
@@ -78,6 +70,7 @@ class RemoteConversationRepository implements ConversationRepository {
         }
       });
       if (check1 == false && check2 == false) {
+        conversation.id = ownerUserId + userId;
         await collectionConversationRef
             .doc(
               ownerUserId + userId,
@@ -87,6 +80,7 @@ class RemoteConversationRepository implements ConversationRepository {
             );
       }
     } catch (e) {
+      log(e.toString());
       throw e;
     }
   }
