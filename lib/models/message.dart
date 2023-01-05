@@ -56,11 +56,16 @@ class Message {
       nameRecord: map[MessagesFieldConstants.nameRecordField] != null
           ? map[MessagesFieldConstants.nameRecordField] as String
           : null,
-      stampTime: DateTime.parse(
-        map[MessagesFieldConstants.stampTimeField],
+      stampTime: DateTime.fromMillisecondsSinceEpoch(
+        map[MessagesFieldConstants.stampTimeField] as int,
       ),
       typeMessage: map[MessagesFieldConstants.typeMessageField] as String,
       messageStatus: map[MessagesFieldConstants.messageStatusField] as String,
     );
+  }
+
+  @override
+  String toString() {
+    return 'Message(id: $id, senderId: $senderId, chatId: $chatId, content: $content, listNameImage: $listNameImage, nameRecord: $nameRecord, stampTime: $stampTime, typeMessage: $typeMessage, messageStatus: $messageStatus)';
   }
 }

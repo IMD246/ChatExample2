@@ -11,4 +11,7 @@ abstract class ConversationRepository {
   Future<Conversation?> getConversationByListUserId({
     required List<String> listUserId
   });
+  Future<void> updateConversationActive({
+    required String conversationId
+  });
 }

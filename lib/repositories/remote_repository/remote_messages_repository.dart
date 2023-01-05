@@ -17,12 +17,12 @@ class RemoteMessagesRepository implements MessagesRepository {
   }
   @override
   Future<void> createMessage({
-    required String chatId,
+    required String conversationId,
     required Message message,
   }) async {
     try {
       return await collectionRefMessages
-          .doc(chatId)
+          .doc(conversationId)
           .collection(MessagesFieldConstants.collectionChildName)
           .doc(message.id!)
           .set(
@@ -40,27 +40,26 @@ class RemoteMessagesRepository implements MessagesRepository {
   Stream<Iterable<Message>?> getMessagesByChatId({
     required String chatId,
   }) {
-    return const Stream.empty();
-    // return collectionRefMessages
-    //     .doc(chatId)
-    //     .collection(MessagesFieldConstants.collectionChildName)
-    //     .doc()
-    //     .snapshots()
-    //     .map(
-    //   (event) {
-    //     if (event.isEmpty || event.size <= 0) {
-    //       return null;
-    //     }
-    //     return event.docs.map(
-    //       (e) {
-    //         return _parsedMessage(
-    //           e.data(),
-    //           e.id,
-    //         );
-    //       },
-    //     );
-    //   },
-    // );
+    return collectionRefMessages
+        .doc(chatId)
+        .collection(MessagesFieldConstants.collectionChildName)
+        .orderBy(MessagesFieldConstants.stampTimeField, descending: false)
+        .snapshots()
+        .map(
+      (event) {
+        if (event.docs.isEmpty || event.size <= 0) {
+          return [];
+        }
+        return event.docs.map(
+          (e) {
+            return _parsedMessage(
+              e.data(),
+              e.id,
+            );
+          },
+        );
+      },
+    );
   }
 }
 

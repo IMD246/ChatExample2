@@ -6,7 +6,7 @@ class Conversation {
   final DateTime stampTimeLastText;
   final String lastText;
   String? nameChat = "";
-  final bool isActive;
+  bool isActive;
   final String typeMessage;
   List<String> listUser = [];
 

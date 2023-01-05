@@ -12,6 +12,7 @@ import '../../StateManager/provider/user_presence_provider.dart';
 import '../../StateManager/provider/user_profile_provider.dart';
 import '../../models/user_profile.dart';
 import '../../widget/animated_switcher_widget.dart';
+import '../messageChat/message_chat_page.dart';
 import '../searchChat/search_chat_page.dart';
 import '../setting/components/setting_screen.dart';
 import 'components/body_conversation_screen.dart';
@@ -92,24 +93,24 @@ class _ConversationScreenState extends State<ConversationScreen> {
   }) {
     // #region listenState methods
     if (state is JoinedChatState) {
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) {
-      //       return MessageChatScreen(
-      //         chatUserAndPresence: state.chatUserAndPresence,
-      //         userInformation: state.chatManager.userInformation,
-      //         socket: state.chatManager.socket,
-      //       );
-      //     },
-      //     settings: RouteSettings(
-      //         name: "chat:${state.chatUserAndPresence.chat?.sId ?? ""}"),
-      //   ),
-      // ).then((value) {
-      //   context.read<ChatBloc>().add(
-      //         BackToWaitingChatEvent(),
-      //       );
-      // });
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return MessageChatPage(
+              conversation: state.conversation,
+              ownerUserProfile: state.userProfile,
+            );
+          },
+          settings: RouteSettings(
+            name: "chat:${state.conversation.id ?? ""}",
+          ),
+        ),
+      ).then((value) {
+        context.read<ChatBloc>().add(
+              BackToWaitingChatEvent(),
+            );
+      });
     } else if (state is WentToSearchChatState) {
       Navigator.push(
         context,
@@ -120,11 +121,13 @@ class _ConversationScreenState extends State<ConversationScreen> {
             );
           },
         ),
-      ).then((value) {
-        context.read<ChatBloc>().add(
-              BackToWaitingChatEvent(),
-            );
-      });
+      ).then(
+        (value) {
+          context.read<ChatBloc>().add(
+                BackToWaitingChatEvent(),
+              );
+        },
+      );
     } else if (state is WentToSettingMenuChatState) {
       Navigator.push(
         context,

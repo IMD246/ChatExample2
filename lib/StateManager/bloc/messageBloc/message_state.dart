@@ -1,22 +1,16 @@
-// import 'package:testsocketchatapp/data/models/user_info.dart';
-// import 'package:testsocketchatapp/presentation/services/bloc/messageBloc/message_manager.dart';
+import '../../../models/user_profile.dart';
 
-// abstract class MessageState {
-//   final MessageManager messageManager;
-//   final UserInformation userInformation;
-//   MessageState({required this.messageManager,required this.userInformation});
-// }
+abstract class MessageState {
+  final UserProfile userprofile;
+  MessageState({
+    required this.userprofile,
+  });
+}
 
-// class InsideMessageState extends MessageState {
-//   InsideMessageState(
-//       {
-//       required super.userInformation,
-//       required super.messageManager});
-// }
-
-// class LeavedChatMessageState extends MessageState {
-//   LeavedChatMessageState(
-//        {
-//       required super.userInformation,
-//       required super.messageManager});
-// }
+class InitializeMessageState extends MessageState {
+  final Stream<String> streamText;
+  InitializeMessageState({
+    required super.userprofile,
+    required this.streamText,
+  });
+}

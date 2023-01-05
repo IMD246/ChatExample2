@@ -1,4 +1,4 @@
-import '../../../models/message.dart';
+
 
 abstract class MessageEvent {}
 
@@ -16,10 +16,17 @@ class LeaveChatMessageEvent extends MessageEvent {
 }
 
 class SendTextMessageEvent extends MessageEvent {
-  final String chatID;
-  final Message message;
+  final String content;
   SendTextMessageEvent({
-    required this.chatID,
-    required this.message,
+    required this.content,
+  });
+}
+class SendLikeMessageEvent extends MessageEvent {
+  SendLikeMessageEvent();
+}
+class UpdateContentTextEvent extends MessageEvent {
+  final String value;
+  UpdateContentTextEvent({
+    required this.value,
   });
 }

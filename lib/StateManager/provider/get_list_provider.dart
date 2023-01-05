@@ -4,6 +4,7 @@ import 'package:provider/single_child_widget.dart';
 
 import '../../main.dart';
 import '../../repositories/remote_repository/remote_conversation_repository.dart';
+import '../../repositories/remote_repository/remote_messages_repository.dart';
 import '../../repositories/remote_repository/remote_storage_repository.dart';
 import '../../repositories/remote_repository/remote_user_presence_repository.dart';
 import '../../repositories/remote_repository/remote_user_profile_repository.dart';
@@ -11,6 +12,7 @@ import '../../services/notification/connectivity_service.dart';
 import 'config_app_provider.dart';
 import 'conversation_provider.dart';
 import 'language_provider.dart';
+import 'messages_provider.dart';
 import 'storage_provider.dart';
 import 'theme_provider.dart';
 import 'user_presence_provider.dart';
@@ -58,6 +60,11 @@ List<SingleChildWidget> getListRepositoryProvider() {
     ChangeNotifierProvider<ConversationProvider>(
       create: (context) => ConversationProvider(
         remoteConversationRepository: RemoteConversationRepository(),
+      ),
+    ),
+    ChangeNotifierProvider<MessagesProvider>(
+      create: (context) => MessagesProvider(
+        remoteMessagesRepository: RemoteMessagesRepository(),
       ),
     ),
   ];

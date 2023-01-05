@@ -80,9 +80,6 @@ class _ItemConversationState extends State<ItemConversation> {
                     fileName: conversationUserId,
                   )
                   .asStream(),
-              onLoading: (context) {
-                return const Text("");
-              },
               onSuccess: (context, data) {
                 return circleImageWidget(
                   urlImage: data ?? "https://i.stack.imgur.com/l60Hf.png",
@@ -96,9 +93,6 @@ class _ItemConversationState extends State<ItemConversation> {
                     userID: conversationUserId,
                   )
                   .asStream(),
-              onLoading: (context) {
-                return const Text("");
-              },
               onSuccess: (context, data) {
                 if (data == null) {
                   return const Text("");
@@ -119,9 +113,7 @@ class _ItemConversationState extends State<ItemConversation> {
           stream: chatBloc.remoteUserProfileRepository
               .getUserProfileById(userID: conversationUserId)
               .asStream(),
-          onLoading: (context) {
-            return const Text("");
-          },
+          
           onSuccess: (context, data) {
             return textWidget(
               text: data?.fullName ?? "Unknown",

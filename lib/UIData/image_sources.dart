@@ -3,6 +3,8 @@ class ImageSources {
 
   static const svgDir = "assets/svg/";
 
+  static const iconDir = "assets/icons/";
+
   static const imgChatIcon = "${imgDir}chat_icon.png";
 
   static const imgGooleIcon = "${imgDir}google_icon.png";
@@ -12,4 +14,7 @@ class ImageSources {
   static const imgLanguage = "${imgDir}languages.png";
 
   static const imgLightMode = "${imgDir}light_mode.png";
+
+  static const icLike = "${iconDir}icon_like.png";
+
 }

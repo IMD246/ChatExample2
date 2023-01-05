@@ -5,7 +5,7 @@ abstract class MessagesRepository {
     required String chatId,
   });
   Future<void> createMessage({
-    required String chatId,
+    required String conversationId,
     required Message message,
   });
 }

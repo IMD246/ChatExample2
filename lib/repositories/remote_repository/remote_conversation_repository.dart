@@ -155,6 +155,21 @@ class RemoteConversationRepository implements ConversationRepository {
       getValue.id,
     );
   }
+
+  @override
+  Future<void> updateConversationActive(
+      {required String conversationId}) async {
+    try {
+      await collectionConversationRef.doc(conversationId).update(
+        {
+          ConversationFieldConstants.isActive: true,
+        },
+      );
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 }
 
 // _parsedListConversation(List<dynamic> params) {
