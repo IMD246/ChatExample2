@@ -28,14 +28,17 @@ class Observer<T> extends StatelessWidget {
             return _defaultOnError(context, snapshot.error);
           }
         }
-        if (snapshot.hasData) {
-          return onSuccess(context, snapshot.data);
-        } else {
-          if (onLoading != null) {
-            return onLoading!(context);
-          } else {
-            return _defaultOnLoading();
-          }
+        switch (snapshot.connectionState) {
+          case ConnectionState.active:
+          case ConnectionState.done:
+            return onSuccess(context, snapshot.data);
+          case ConnectionState.waiting:
+          default:
+            if (onLoading != null) {
+              return onLoading!(context);
+            } else {
+              return _defaultOnLoading();
+            }
         }
       },
     );

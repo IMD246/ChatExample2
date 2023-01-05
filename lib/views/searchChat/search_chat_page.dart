@@ -56,6 +56,14 @@ class SearchChatPage extends StatelessWidget {
                     ],
                   ),
                 ),
+              ).then(
+                (value) {
+                  context.read<SearchChatBloc>().add(
+                        SearchingSearchChatEvent(
+                          searchText: state.searchText,
+                        ),
+                      );
+                },
               );
               //   MesssageScreen(
               //  conversation: state.conversation,

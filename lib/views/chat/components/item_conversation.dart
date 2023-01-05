@@ -27,9 +27,8 @@ class ItemConversation extends StatefulWidget {
 
 class _ItemConversationState extends State<ItemConversation> {
   String _getIdUserConversation(ChatBloc chatBloc) {
-    if (widget.conversation.listUser[0] == chatBloc.userProfile.id &&
-        widget.conversation.listUser[1] == chatBloc.userProfile.id) {
-      return widget.conversation.listUser[0];
+    if (widget.conversation.listUser.length == 1) {
+      return widget.conversation.listUser.first;
     }
     return widget.conversation.listUser.firstWhere(
       (element) => element != chatBloc.userProfile.id,

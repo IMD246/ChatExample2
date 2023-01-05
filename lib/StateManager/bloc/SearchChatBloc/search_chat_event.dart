@@ -16,13 +16,11 @@ class SearchingSearchChatEvent extends SearchChatEvent {
 }
 
 class GoToConversationRoomSearchChatEvent extends SearchChatEvent {
-  final String ownerUserId;
-  final String userIdPicked;
+  final List<String> listUserId;
   final UserPresence? userPresence;
   final String? searchText;
   GoToConversationRoomSearchChatEvent({
-    required this.ownerUserId,
-    required this.userIdPicked,
+    required this.listUserId,
     required this.userPresence,
     required this.searchText,
   });

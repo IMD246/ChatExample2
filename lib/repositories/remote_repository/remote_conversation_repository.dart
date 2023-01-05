@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:isolate';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -44,13 +43,25 @@ class RemoteConversationRepository implements ConversationRepository {
 
   @override
   Future<void> createConversation({
-    required String ownerUserId,
-    required String userId,
+    required List<String> listUserIdConversation,
     required Conversation conversation,
   }) async {
     try {
-      final check1 =
-          await collectionConversationRef.doc(ownerUserId + userId).get().then(
+      late String ownerUserId;
+      String? userId;
+      if (listUserIdConversation.length == 1) {
+        ownerUserId = listUserIdConversation[0];
+      }
+      if (listUserIdConversation.length == 2) {
+        ownerUserId = listUserIdConversation[0];
+        userId = listUserIdConversation[1];
+      }
+      final check1 = await collectionConversationRef
+          .doc(
+            ownerUserId + (userId ?? ""),
+          )
+          .get()
+          .then(
         (value) {
           if (value.exists) {
             return true;
@@ -60,7 +71,9 @@ class RemoteConversationRepository implements ConversationRepository {
         },
       );
       final check2 = await collectionConversationRef
-          .doc(userId + ownerUserId)
+          .doc(
+            (userId ?? "") + ownerUserId,
+          )
           .get()
           .then((value) {
         if (value.exists) {
@@ -70,10 +83,13 @@ class RemoteConversationRepository implements ConversationRepository {
         }
       });
       if (check1 == false && check2 == false) {
-        conversation.id = ownerUserId + userId;
+        conversation.id = ownerUserId + (userId ?? "");
+        if (ownerUserId == userId) {
+          conversation.listUser.removeAt(1);
+        }
         await collectionConversationRef
             .doc(
-              ownerUserId + userId,
+              conversation.id,
             )
             .set(
               conversation.toMap(),
@@ -81,15 +97,27 @@ class RemoteConversationRepository implements ConversationRepository {
       }
     } catch (e) {
       log(e.toString());
-      throw e;
+      rethrow;
     }
   }
 
   @override
-  Future<Conversation?> getConversationByListUserId(
-      {required List<String> listUserId}) async {
+  Future<Conversation?> getConversationByListUserId({
+    required List<String> listUserId,
+  }) async {
+    late String ownerUserId;
+    String? userId;
+    if (listUserId.length == 1) {
+      ownerUserId = listUserId[0];
+    }
+    if (listUserId.length == 2) {
+      ownerUserId = listUserId[0];
+      userId = listUserId[1];
+    }
     final getValue = await collectionConversationRef
-        .doc(listUserId[0] + listUserId[1])
+        .doc(
+          ownerUserId + (userId ?? ""),
+        )
         .get()
         .then(
       (value) async {
@@ -101,7 +129,7 @@ class RemoteConversationRepository implements ConversationRepository {
           );
         } else {
           return await collectionConversationRef
-              .doc(listUserId[1] + listUserId[0])
+              .doc((userId ?? "") + ownerUserId)
               .get()
               .then(
             (value) async {
@@ -129,18 +157,18 @@ class RemoteConversationRepository implements ConversationRepository {
   }
 }
 
-_parsedListConversation(List<dynamic> params) {
-  SendPort sendPort = params[0];
-  final listObject = params[1] as List<QueryDocumentSnapshot<Object?>>;
-  sendPort.send(
-    listObject.map(
-      (e) => _parsedConversation(
-        e.data(),
-        e.id,
-      ),
-    ),
-  );
-}
+// _parsedListConversation(List<dynamic> params) {
+//   SendPort sendPort = params[0];
+//   final listObject = params[1] as List<QueryDocumentSnapshot<Object?>>;
+//   sendPort.send(
+//     listObject.map(
+//       (e) => _parsedConversation(
+//         e.data(),
+//         e.id,
+//       ),
+//     ),
+//   );
+// }
 
 Conversation _parsedConversation(Object? object, String id) {
   final convertToMap = json.decode(

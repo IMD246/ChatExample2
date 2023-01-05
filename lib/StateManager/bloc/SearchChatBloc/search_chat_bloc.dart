@@ -97,26 +97,19 @@ class SearchChatBloc extends Bloc<SearchChatEvent, SearchChatState> {
       (event, emit) async {
         try {
           await remoteConversationRepository.createConversation(
-            ownerUserId: event.ownerUserId,
-            userId: event.userIdPicked,
+            listUserIdConversation: event.listUserId,
             conversation: Conversation(
               typeMessage: TypeMessage.text.toString(),
               isActive: false,
               lastText: "Rất vui được làm quen",
               stampTime: DateTime.now(),
               stampTimeLastText: DateTime.now(),
-              listUser: [
-                event.ownerUserId,
-                event.userIdPicked,
-              ],
+              listUser: event.listUserId,
             ),
           );
           final conversation =
               await remoteConversationRepository.getConversationByListUserId(
-            listUserId: [
-              event.ownerUserId,
-              event.userIdPicked,
-            ],
+            listUserId: event.listUserId,
           );
           if (conversation != null) {
             emit(

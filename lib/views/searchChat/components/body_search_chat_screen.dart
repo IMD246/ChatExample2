@@ -6,7 +6,7 @@ import '../../../StateManager/bloc/SearchChatBloc/search_chat_bloc.dart';
 import '../../../StateManager/bloc/SearchChatBloc/search_chat_event.dart';
 import '../../../constants/constant.dart';
 import '../../../models/user_profile.dart';
-import 'list_search_conversation.dart';
+import 'list_search_user_profile.dart';
 
 class BodySearchChatScreen extends StatefulWidget {
   const BodySearchChatScreen({
@@ -71,7 +71,7 @@ class _BodySearchChatScreenState extends State<BodySearchChatScreen> {
               case ConnectionState.active:
                 if (snapshot.hasData) {
                   final listUserProfile = snapshot.data!;
-                  return ListSearchConversation(
+                  return ListSearchUserProfile(
                     listUserProfile: listUserProfile,
                     ownerUserProfile: widget.userProfile,
                   );

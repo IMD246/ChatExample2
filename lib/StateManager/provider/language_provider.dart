@@ -13,8 +13,7 @@ class LanguageProvider extends ChangeNotifier {
   }
   Future<void> changeLocale(
       {required String language, required String userID}) async {
-    final value =
-        await sharedPref.setString(Constants.languageKey, language);
+    final value = await sharedPref.setString(Constants.languageKey, language);
     if (value) {
       setLocale(language: language);
     }
@@ -26,13 +25,20 @@ class LanguageProvider extends ChangeNotifier {
       locale = Locale(Platform.localeName);
     } else {
       final splitLanguage = language.split("_");
-      locale = Locale(splitLanguage[0], splitLanguage[1]);
+      locale = Locale(
+        splitLanguage[0],
+        splitLanguage[1],
+      );
     }
+    notifyListeners();
   }
 
   void setLocale({required String language}) {
     final splitLanguage = language.split("_");
-    locale = Locale(splitLanguage[0], splitLanguage[1]);
+    locale = Locale(
+      splitLanguage[0],
+      splitLanguage[1],
+    );
     notifyListeners();
   }
 }

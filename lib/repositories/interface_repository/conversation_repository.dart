@@ -5,8 +5,7 @@ abstract class ConversationRepository {
     required String userId,
   });
   Future<void> createConversation({
-    required String ownerUserId,
-    required String userId,
+    required List<String> listUserIdConversation,
     required Conversation conversation,
   });
   Future<Conversation?> getConversationByListUserId({

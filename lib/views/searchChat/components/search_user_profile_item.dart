@@ -9,8 +9,8 @@ import '../../../constants/constant.dart';
 import '../../../models/user_presence.dart';
 import '../../../models/user_profile.dart';
 
-class ConversationItem extends StatefulWidget {
-  const ConversationItem({
+class SearchUserProfileItem extends StatefulWidget {
+  const SearchUserProfileItem({
     Key? key,
     required this.userProfile,
     required this.ownerUserProfile,
@@ -18,12 +18,25 @@ class ConversationItem extends StatefulWidget {
   final UserProfile userProfile;
   final UserProfile ownerUserProfile;
   @override
-  State<ConversationItem> createState() => _ConversationItemState();
+  State<SearchUserProfileItem> createState() => _SearchUserProfileItemState();
 }
 
-class _ConversationItemState extends State<ConversationItem> {
+class _SearchUserProfileItemState extends State<SearchUserProfileItem> {
+  List<String> listUserProfileConversationId = [];
+  void _handleListUserProfile() {
+    if (widget.userProfile.id == widget.ownerUserProfile.id) {
+      listUserProfileConversationId.add(widget.userProfile.id!);
+    } else {
+      listUserProfileConversationId = [
+        widget.userProfile.id!,
+        widget.ownerUserProfile.id!
+      ];
+    }
+  }
+
   @override
   void initState() {
+    _handleListUserProfile();
     super.initState();
   }
 
@@ -47,8 +60,7 @@ class _ConversationItemState extends State<ConversationItem> {
               onTap: () {
                 searchChatBloc.add(
                   GoToConversationRoomSearchChatEvent(
-                    ownerUserId: widget.userProfile.id!,
-                    userIdPicked: widget.userProfile.id!,
+                    listUserId: listUserProfileConversationId,
                     userPresence: userPresence,
                     searchText: searchChatBloc.searchText,
                   ),
