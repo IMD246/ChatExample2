@@ -39,3 +39,19 @@ class UpdateContentTextEvent extends MessageEvent {
     required this.value,
   });
 }
+
+class OpenRecorderEvent extends MessageEvent {
+  OpenRecorderEvent();
+}
+
+class DeleteRecorderEvent extends MessageEvent {
+  DeleteRecorderEvent();
+}
+
+class PauseRecorderEvent extends MessageEvent {
+  PauseRecorderEvent();
+}
+
+class ResumeRecorderEvent extends MessageEvent {
+  ResumeRecorderEvent();
+}

@@ -3,6 +3,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
@@ -48,6 +50,22 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
       _conversationsSubject.sink;
 
   final ScrollController scrollController = ScrollController();
+
+  final BehaviorSubject<bool> _subjectRecorder = BehaviorSubject<bool>();
+
+  Stream<bool> get streamRecorder => _subjectRecorder.stream;
+
+  StreamSink<bool> get _sinkRecorder => _subjectRecorder.sink;
+
+  final BehaviorSubject<bool> _pauseRecorderSubject = BehaviorSubject<bool>();
+
+  Stream<bool> get pauseRecorderStream => _pauseRecorderSubject.stream;
+
+  StreamSink<bool> get _sinkPauseRecorder => _pauseRecorderSubject.sink;
+
+  bool _statusInitRecorder = false;
+
+  final FlutterSoundRecorder recorder = FlutterSoundRecorder();
 
   MessageBloc({
     required this.remoteMessagesRepository,
@@ -317,6 +335,62 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
         );
       },
     );
+    on<OpenRecorderEvent>(
+      (event, emit) async {
+        await _initRecorder();
+        if (_statusInitRecorder) {
+          await _record();
+          _sinkRecorder.add(true);
+        } else {
+          _sinkRecorder.add(false);
+        }
+        emit(
+          InitializeMessageState(
+            userprofile: ownerUserProfile,
+            streamText: streamText,
+          ),
+        );
+      },
+    );
+    on<DeleteRecorderEvent>(
+      (event, emit) async {
+        if (recorder.isRecording) {
+          await recorder.stopRecorder();
+          await recorder.deleteRecord(fileName: 'audio');
+          // _sinkRecorder.add(false);
+        }
+        emit(
+          InitializeMessageState(
+            userprofile: ownerUserProfile,
+            streamText: streamText,
+          ),
+        );
+      },
+    );
+    on<PauseRecorderEvent>(
+      (event, emit) async {
+        _sinkPauseRecorder.add(true);
+        await recorder.pauseRecorder();
+        emit(
+          InitializeMessageState(
+            userprofile: ownerUserProfile,
+            streamText: streamText,
+          ),
+        );
+      },
+    );
+    on<ResumeRecorderEvent>(
+      (event, emit) async {
+        _sinkPauseRecorder.add(false);
+        await recorder.resumeRecorder();
+        emit(
+          InitializeMessageState(
+            userprofile: ownerUserProfile,
+            streamText: streamText,
+          ),
+        );
+      },
+    );
   }
   void _getConversationUserId() async {
     if (conversation.listUser.length == 1) {
@@ -347,11 +421,28 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     required String mediaName,
   }) {
     final extension = UtilHandleValue.getFileExtension(mediaName);
-    log(extension.toString());
     if (extension == ".jpg" || extension == ".png") {
       return true;
     }
     return false;
+  }
+
+  Future<void> _initRecorder() async {
+    final status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      _statusInitRecorder = false;
+    } else {
+      await recorder.openRecorder();
+      await recorder.setSubscriptionDuration(
+        const Duration(milliseconds: 500),
+      );
+    }
+
+    _statusInitRecorder = true;
+  }
+
+  Future _record() async {
+    await recorder.startRecorder(toFile: 'audio');
   }
 
   @override
@@ -360,6 +451,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     await _textSubject.close();
     await _conversationsSubject.drain();
     await _conversationsSubject.close();
+    await recorder.closeRecorder();
     return super.close();
   }
 }
