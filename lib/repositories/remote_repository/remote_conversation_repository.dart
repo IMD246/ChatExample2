@@ -157,14 +157,14 @@ class RemoteConversationRepository implements ConversationRepository {
   }
 
   @override
-  Future<void> updateConversationActive(
-      {required String conversationId}) async {
+  Future<void> updateConversation({
+    required String conversationId,
+    required Map<String, dynamic> data,
+  }) async {
     try {
       await collectionConversationRef.doc(conversationId).update(
-        {
-          ConversationFieldConstants.isActive: true,
-        },
-      );
+            data,
+          );
     } catch (e) {
       log(e.toString());
       rethrow;

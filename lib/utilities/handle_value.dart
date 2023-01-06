@@ -33,4 +33,7 @@ class UtilHandleValue {
   static bool isDarkMode(ThemeMode themeMode) {
     return themeMode == ThemeMode.dark ? true : false;
   }
+  static String getFileExtension(String fileName) {
+      return ".${fileName.split('.').last}";
+  }
 }

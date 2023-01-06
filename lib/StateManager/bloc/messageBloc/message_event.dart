@@ -1,4 +1,4 @@
-
+import 'package:file_picker/file_picker.dart';
 
 abstract class MessageEvent {}
 
@@ -21,9 +21,18 @@ class SendTextMessageEvent extends MessageEvent {
     required this.content,
   });
 }
+
 class SendLikeMessageEvent extends MessageEvent {
   SendLikeMessageEvent();
 }
+
+class SendImageMessageEvent extends MessageEvent {
+  final FilePickerResult result;
+  SendImageMessageEvent({
+    required this.result,
+  });
+}
+
 class UpdateContentTextEvent extends MessageEvent {
   final String value;
   UpdateContentTextEvent({

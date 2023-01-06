@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
@@ -9,12 +10,14 @@ import '../../../enum/enum.dart';
 import '../../../models/conversation.dart';
 import '../../../models/message.dart';
 import '../../../models/user_profile.dart';
+import '../../../repositories/constants/conversation_field_constants.dart';
 import '../../../repositories/remote_repository/remote_conversation_repository.dart';
 import '../../../repositories/remote_repository/remote_messages_repository.dart';
 import '../../../repositories/remote_repository/remote_storage_repository.dart';
 import '../../../repositories/remote_repository/remote_user_presence_repository.dart';
 import '../../../repositories/remote_repository/remote_user_profile_repository.dart';
 import '../../../services/fcm/fcm_handler.dart';
+import '../../../utilities/handle_value.dart';
 import 'message_event.dart';
 import 'message_state.dart';
 
@@ -34,6 +37,18 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
   StreamSink<String> get _sinkText => _textSubject.sink;
 
   late String conversationUserId;
+
+  final ReplaySubject<Iterable<Message>?> _conversationsSubject =
+      ReplaySubject();
+
+  Stream<Iterable<Message>?> get conversationStream =>
+      _conversationsSubject.stream;
+
+  StreamSink<Iterable<Message>?> get _conversationSink =>
+      _conversationsSubject.sink;
+
+  final ScrollController scrollController = ScrollController();
+
   MessageBloc({
     required this.remoteMessagesRepository,
     required this.conversation,
@@ -51,6 +66,15 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     _getConversationUserId();
     on<InitializingMessageEvent>(
       (event, emit) async {
+        remoteMessagesRepository
+            .getMessagesByChatId(
+          chatId: conversation.id!,
+        )
+            .listen(
+          (event) {
+            _conversationSink.add(event);
+          },
+        );
         emit(
           InitializeMessageState(
             userprofile: ownerUserProfile,
@@ -63,8 +87,11 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
       (event, emit) async {
         try {
           if (!conversation.isActive) {
-            await remoteConversationRepository.updateConversationActive(
+            await remoteConversationRepository.updateConversation(
               conversationId: conversation.id!,
+              data: {
+                ConversationFieldConstants.isActive: true,
+              },
             );
             conversation.isActive = true;
           }
@@ -83,8 +110,15 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
               messageStatus: MessageStatus.sent.toString(),
             ),
           );
+          await remoteConversationRepository.updateConversation(
+            conversationId: conversation.id!,
+            data: {
+              ConversationFieldConstants.lastText: event.content,
+              ConversationFieldConstants.stampTimeLastText:
+                  DateTime.now().millisecondsSinceEpoch,
+            },
+          );
           _sinkText.add("");
-
           final userProfile =
               await remoteUserProfileRepository.getUserProfileById(
             userID: conversationUserId,
@@ -125,8 +159,11 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     on<SendLikeMessageEvent>((event, emit) async {
       try {
         if (!conversation.isActive) {
-          await remoteConversationRepository.updateConversationActive(
+          await remoteConversationRepository.updateConversation(
             conversationId: conversation.id!,
+            data: {
+              ConversationFieldConstants.isActive: true,
+            },
           );
           conversation.isActive = true;
         }
@@ -145,7 +182,14 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
             messageStatus: MessageStatus.sent.toString(),
           ),
         );
-
+        await remoteConversationRepository.updateConversation(
+          conversationId: conversation.id!,
+          data: {
+            ConversationFieldConstants.lastText: "Gửi một like tin nhắn",
+            ConversationFieldConstants.stampTimeLastText:
+                DateTime.now().millisecondsSinceEpoch,
+          },
+        );
         final userProfile =
             await remoteUserProfileRepository.getUserProfileById(
           userID: conversationUserId,
@@ -182,6 +226,86 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
         );
       }
     });
+    on<SendImageMessageEvent>(
+      (event, emit) async {
+        try {
+          List<String> listFileName = [];
+          for (var element in event.result.files) {
+            listFileName.add(element.name);
+          }
+          if (!conversation.isActive) {
+            await remoteConversationRepository.updateConversation(
+              conversationId: conversation.id!,
+              data: {
+                ConversationFieldConstants.isActive: true,
+              },
+            );
+            conversation.isActive = true;
+          }
+          final uuid = const Uuid().v4();
+          await remoteMessagesRepository.createMessage(
+            conversationId: conversation.id!,
+            message: Message(
+              id: uuid,
+              senderId: ownerUserProfile.id!,
+              chatId: conversation.id!,
+              content: "",
+              listNameImage: listFileName,
+              nameRecord: "",
+              stampTime: DateTime.now(),
+              typeMessage: TypeMessage.media.toString(),
+              messageStatus: MessageStatus.sent.toString(),
+            ),
+          );
+          await remoteConversationRepository.updateConversation(
+            conversationId: conversation.id!,
+            data: {
+              ConversationFieldConstants.lastText:
+                  "Đã gửi ${event.result.files.length} ảnh",
+              ConversationFieldConstants.stampTimeLastText:
+                  DateTime.now().millisecondsSinceEpoch,
+            },
+          );
+          final userProfile =
+              await remoteUserProfileRepository.getUserProfileById(
+            userID: conversationUserId,
+          );
+          await remoteStorageRepository.uploadMultipleFile(
+            listFile: event.result.files,
+            path: "messages/${conversation.id}",
+          );
+          if (userProfile != null) {
+            await FcmHandler.sendMessage(
+              notification: {
+                'title': userProfile.fullName,
+                'body': "Gửi ${event.result.files.length} ảnh",
+              },
+              tokenUserFriend: userProfile.messagingToken ?? "",
+              tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
+              data: {
+                "conversationId": conversation.id!,
+                "ownerUserId": ownerUserProfile.id!,
+              },
+            );
+          }
+
+          emit(
+            InitializeMessageState(
+              userprofile: ownerUserProfile,
+              streamText: streamText,
+            ),
+          );
+        } catch (e) {
+          log(e.toString());
+          emit(
+            InitializeMessageState(
+              userprofile: ownerUserProfile,
+              streamText: streamText,
+            ),
+          );
+        }
+      },
+    );
     on<UpdateContentTextEvent>(
       (event, emit) {
         _sinkText.add(event.value);
@@ -204,10 +328,38 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     }
   }
 
+  Future<void> scrollToEnd() async {
+    if (scrollController.hasClients) {
+      if (scrollController.position.pixels !=
+          scrollController.position.maxScrollExtent) {
+        await scrollController.animateTo(
+          0.0,
+          duration: const Duration(
+            milliseconds: 300,
+          ),
+          curve: Curves.bounceIn,
+        );
+      }
+    }
+  }
+
+  bool isImageExtension({
+    required String mediaName,
+  }) {
+    final extension = UtilHandleValue.getFileExtension(mediaName);
+    log(extension.toString());
+    if (extension == ".jpg" || extension == ".png") {
+      return true;
+    }
+    return false;
+  }
+
   @override
   Future<void> close() async {
     await _textSubject.drain();
     await _textSubject.close();
+    await _conversationsSubject.drain();
+    await _conversationsSubject.close();
     return super.close();
   }
 }

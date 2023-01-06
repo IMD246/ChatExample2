@@ -9,8 +9,10 @@ import '../interface_repository/storage_repository.dart';
 class RemoteStorageRepository implements StorageRepository {
   final FirebaseStorage storage = FirebaseStorage.instance;
   @override
-  Future<String?> getFile(
-      {required String filePath, required String fileName}) async {
+  Future<String?> getFile({
+    required String filePath,
+    required String fileName,
+  }) async {
     try {
       final refPath = "$filePath/$fileName";
       String downloadURL = await storage.ref(refPath).getDownloadURL();
@@ -21,10 +23,23 @@ class RemoteStorageRepository implements StorageRepository {
   }
 
   @override
-  Future<void> uploadMultipleFile(
-      {required List<PlatformFile> listFile, required String path}) {
-    // TODO: implement uploadMultipleFile
-    throw UnimplementedError();
+  Future<void> uploadMultipleFile({
+    required List<PlatformFile> listFile,
+    required String path,
+  }) async {
+    try {
+      for (var element in listFile) {
+        final file = File(element.path!);
+        await uploadFile(
+          file: file,
+          filePath: path,
+          fileName: element.name,
+        );
+      }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
   }
 
   @override

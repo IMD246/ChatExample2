@@ -8,10 +8,10 @@ import '../../models/message.dart';
 import '../constants/messages_field_constants.dart';
 import '../interface_repository/messages_repository.dart';
 
-class RemoteMessagesRepository implements MessagesRepository {
+class LocalMessagesRepository implements MessagesRepository {
   late CollectionReference collectionRefMessages;
 
-  RemoteMessagesRepository() {
+  LocalMessagesRepository() {
     collectionRefMessages = FirebaseFirestore.instance.collection(
       MessagesFieldConstants.collectionParentName,
     );
@@ -89,6 +89,14 @@ class RemoteMessagesRepository implements MessagesRepository {
           priority: Isolate.immediate,
         );
         return data;
+        // return event.docs.map(
+        //   (e) {
+        //     return _parsedMessage(
+        //       e.data(),
+        //       e.id,
+        //     );
+        //   },
+        // );
       },
     );
   }

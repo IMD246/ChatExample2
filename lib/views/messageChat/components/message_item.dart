@@ -11,6 +11,7 @@ import '../../../utilities/format_date.dart';
 import '../../../utilities/handle_value.dart';
 import '../../../widget/online_icon_widget.dart';
 import 'like_message.dart';
+import 'media_message.dart';
 import 'text_message.dart';
 
 class MessageItem extends StatefulWidget {
@@ -100,7 +101,7 @@ class _MessageItemState extends State<MessageItem> {
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      if (isShowLeftAvartar) leftAvatar(messageBloc),
+                      // if (isShowLeftAvartar) leftAvatar(messageBloc: messageBloc),
                       GestureDetector(
                         onTap: () {
                           setState(() {
@@ -231,7 +232,7 @@ class _MessageItemState extends State<MessageItem> {
     );
   }
 
-  Positioned leftAvatar(MessageBloc messageBloc) {
+  Positioned leftAvatar({required MessageBloc messageBloc}) {
     return Positioned(
       bottom: 0,
       left: -8.w,
@@ -281,7 +282,10 @@ class _MessageItemState extends State<MessageItem> {
       return TextMessage(message: message);
     } else if (TypeMessage.like.toString() == message.typeMessage) {
       return const LikeMessage();
-    } else {
+    } else if (TypeMessage.media.toString() == message.typeMessage) {
+      return MediaMessage(message: message,);
+    } 
+    else {
       return textWidget(text: "Dont build this widget yet!");
     }
   }

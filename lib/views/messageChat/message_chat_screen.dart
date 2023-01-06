@@ -3,6 +3,7 @@ import 'package:flutter_basic_utilities/widgets/circle_image_widget.dart';
 import 'package:flutter_basic_utilities/widgets/text_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 import '../../StateManager/bloc/messageBloc/message_bloc.dart';
 import '../../extensions/localization.dart';
@@ -18,19 +19,20 @@ class MessageChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final messageBloc = context.read<MessageBloc>();
+    final statusConnectionInternet = Provider.of<bool>(context);
     return Scaffold(
       appBar: buildAppbar(
-        context: context,
-        messageBloc: messageBloc,
-      ),
+          context: context,
+          messageBloc: messageBloc,
+          statusConnectionInternet: statusConnectionInternet),
       body: const BodyMessageChat(),
     );
   }
 
-  AppBar buildAppbar({
-    required BuildContext context,
-    required MessageBloc messageBloc,
-  }) {
+  AppBar buildAppbar(
+      {required BuildContext context,
+      required MessageBloc messageBloc,
+      required bool statusConnectionInternet}) {
     return AppBar(
       backgroundColor: Colors.greenAccent,
       leading: BackButton(
@@ -39,24 +41,21 @@ class MessageChatScreen extends StatelessWidget {
           Navigator.of(context).pop();
         },
       ),
-      // bottom: !internetProvider.isConnectedInternet
-      //     ? PreferredSize(
-      //         preferredSize: Size(
-      //           20.w,
-      //           20.h,
-      //         ),
-      //         child: Visibility(
-      //           visible: !internetProvider.isConnectedInternet,
-      //           child: Padding(
-      //             padding: EdgeInsets.only(bottom: 4.0.h),
-      //             child: textWidget(
-      //               text: context.loc.waiting_internet,
-      //               size: 15.h,
-      //             ),
-      //           ),
-      //         ),
-      //       )
-      //     : null,
+      bottom: !statusConnectionInternet
+          ? PreferredSize(
+              preferredSize: Size(
+                20.w,
+                20.h,
+              ),
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 4.0.h),
+                child: textWidget(
+                  text: context.loc.waiting_internet,
+                  size: 15.h,
+                ),
+              ),
+            )
+          : null,
       title: StreamBuilder<UserPresence?>(
         stream: messageBloc.remoteUserPresenceRepository
             .getUserPresenceById(userID: messageBloc.conversationUserId)

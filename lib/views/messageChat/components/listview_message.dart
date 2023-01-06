@@ -7,9 +7,10 @@ class ListViewMessage extends StatefulWidget {
   const ListViewMessage({
     super.key,
     required this.messages,
+    required this.scrollController,
   });
   final Iterable<Message> messages;
-
+  final ScrollController scrollController;
   @override
   State<ListViewMessage> createState() => _ListViewMessageState();
 }
@@ -29,16 +30,18 @@ class _ListViewMessageState extends State<ListViewMessage> {
 
   @override
   Widget build(BuildContext context) {
+    final reverserMessages = widget.messages.toList().reversed;
     return ListView.builder(
-      itemCount: widget.messages.length,
-      // controller: messageBloc.messageManager.scrollController,
+      itemCount: reverserMessages.length,
+      controller: widget.scrollController,
+      reverse: true,
       shrinkWrap: true,
       itemBuilder: (context, index) {
-        final message = widget.messages.elementAt(index);
+        final message = reverserMessages.elementAt(index);
         return MessageItem(
           message: message,
           index: index,
-          totalCountIndex: widget.messages.length - 1,
+          totalCountIndex: reverserMessages.length - 1,
         );
       },
     );

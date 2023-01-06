@@ -5,7 +5,7 @@ class Message {
   final String senderId;
   final String chatId;
   final String? content;
-  final List<String>? listNameImage;
+  final List<String> listNameImage;
   final String? nameRecord;
   final DateTime stampTime;
   final String typeMessage;
@@ -52,7 +52,7 @@ class Message {
           ? List<String>.from(
               (map[MessagesFieldConstants.listNameImageField] as List),
             )
-          : null,
+          : [],
       nameRecord: map[MessagesFieldConstants.nameRecordField] != null
           ? map[MessagesFieldConstants.nameRecordField] as String
           : null,

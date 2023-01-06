@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../../StateManager/bloc/messageBloc/message_bloc.dart';
+import '../../StateManager/bloc/messageBloc/message_event.dart';
 import '../../StateManager/bloc/messageBloc/message_state.dart';
 import '../../StateManager/provider/conversation_provider.dart';
 import '../../StateManager/provider/messages_provider.dart';
@@ -52,7 +53,9 @@ class _MessageChatPageState extends State<MessageChatPage> {
         remoteMessagesRepository: messagesProvider.remoteMessagesRepository,
         remoteConversationRepository:
             conversationProvider.remoteConversationRepository,
-      ),
+      )..add(
+          InitializingMessageEvent(),
+        ),
       child: BlocConsumer<MessageBloc, MessageState>(
         listener: (context, state) {},
         builder: (context, state) {
