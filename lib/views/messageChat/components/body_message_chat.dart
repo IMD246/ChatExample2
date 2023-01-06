@@ -1,7 +1,9 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_basic_utilities/widgets/text_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 
 import '../../../StateManager/bloc/messageBloc/message_bloc.dart';
 import '../../../StateManager/bloc/messageBloc/message_event.dart';
@@ -9,6 +11,7 @@ import '../../../UIData/image_sources.dart';
 import '../../../constants/constant.dart';
 import '../../../extensions/localization.dart';
 import '../../../models/message.dart';
+import '../../../utilities/format_date.dart';
 import 'list_message.dart';
 import 'recorder_icon_button.dart';
 import 'welcome_chat_message.dart';
@@ -49,7 +52,7 @@ class _BodyMessageChatState extends State<BodyMessageChat> {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 final messages = snapshot.data;
-                if (messages == null || !messageBloc.conversation.isActive) {
+                if (messages!.isEmpty || !messageBloc.conversation.isActive) {
                   return const WelcomeChatMessage();
                 }
                 return ListMessage(
@@ -150,38 +153,70 @@ class _BodyMessageChatState extends State<BodyMessageChat> {
                                 ),
                               ),
                               child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   StreamBuilder<bool>(
                                     initialData: false,
                                     stream: messageBloc.pauseRecorderStream,
                                     builder: (context, pauseRecorder) {
-                                      return IconButton(
-                                        onPressed: () {
-                                          if (!pauseRecorder.data!) {
-                                            messageBloc.add(
-                                              ResumeRecorderEvent(),
-                                            );
-                                          } else {
+                                      if (pauseRecorder.data == false) {
+                                        return IconButton(
+                                          onPressed: () {
                                             messageBloc.add(
                                               PauseRecorderEvent(),
                                             );
-                                          }
+                                          },
+                                          icon: const Icon(
+                                            Icons.pause,
+                                            color: Colors.white,
+                                          ),
+                                        );
+                                      }
+                                      return IconButton(
+                                        onPressed: () {
+                                          messageBloc.add(
+                                            ResumeRecorderEvent(),
+                                          );
                                         },
-                                        icon: Icon(
-                                          pauseRecorder.data!
-                                              ? Icons.play_arrow
-                                              : Icons.pause,
+                                        icon: const Icon(
+                                          Icons.play_arrow,
                                           color: Colors.white,
                                         ),
                                       );
                                     },
+                                  ),
+                                  textWidget(
+                                    text: "Tiến trình ghi âm",
+                                    color: Colors.white,
+                                    size: 16.sp,
+                                  ),
+                                  StreamBuilder<RecordingDisposition>(
+                                    stream: messageBloc.recorder.onProgress,
+                                    builder: (context, snapshot) {
+                                      final duration = snapshot.hasData
+                                          ? snapshot.data!.duration
+                                          : Duration.zero;
+                                      return textWidget(
+                                        text: "(${formatTime(duration)})",
+                                        size: 14.sp,
+                                        color: Colors.white,
+                                      );
+                                    },
+                                  ),
+                                  SizedBox(
+                                    width: 4.w,
                                   ),
                                 ],
                               ),
                             ),
                           ),
                           IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              messageBloc.add(
+                                SendAudioMessageEvent(),
+                              );
+                            },
                             icon: const Icon(
                               Icons.send,
                               color: kPrimaryColor,

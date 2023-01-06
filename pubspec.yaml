@@ -78,6 +78,7 @@ dependencies:
   staggered_grid_view_flutter: ^0.0.4
   video_player: ^2.4.10
   flutter_sound: ^9.2.13
+  audioplayers: ^1.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

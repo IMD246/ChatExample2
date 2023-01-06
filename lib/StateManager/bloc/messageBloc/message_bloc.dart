@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -290,7 +291,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
           );
           await remoteStorageRepository.uploadMultipleFile(
             listFile: event.result.files,
-            path: "messages/${conversation.id}",
+            path: "messages/${conversation.id}/$uuid",
           );
           if (userProfile != null) {
             await FcmHandler.sendMessage(
@@ -307,6 +308,87 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
             );
           }
 
+          emit(
+            InitializeMessageState(
+              userprofile: ownerUserProfile,
+              streamText: streamText,
+            ),
+          );
+        } catch (e) {
+          log(e.toString());
+          emit(
+            InitializeMessageState(
+              userprofile: ownerUserProfile,
+              streamText: streamText,
+            ),
+          );
+        }
+      },
+    );
+    on<SendAudioMessageEvent>(
+      (event, emit) async {
+        try {
+          final path = await recorder.stopRecorder();
+          _sinkRecorder.add(false);
+          _pauseRecorderSubject.add(false);
+          if (path != null) {
+            if (!conversation.isActive) {
+              await remoteConversationRepository.updateConversation(
+                conversationId: conversation.id!,
+                data: {
+                  ConversationFieldConstants.isActive: true,
+                },
+              );
+              conversation.isActive = true;
+            }
+            final uuid = const Uuid().v4();
+            await remoteMessagesRepository.createMessage(
+              conversationId: conversation.id!,
+              message: Message(
+                id: uuid,
+                senderId: ownerUserProfile.id!,
+                chatId: conversation.id!,
+                content: "",
+                listNameImage: [],
+                nameRecord: uuid,
+                stampTime: DateTime.now(),
+                typeMessage: TypeMessage.audio.toString(),
+                messageStatus: MessageStatus.sent.toString(),
+              ),
+            );
+            await remoteConversationRepository.updateConversation(
+              conversationId: conversation.id!,
+              data: {
+                ConversationFieldConstants.lastText:
+                    "Đã gửi một tin nhắn thoại",
+                ConversationFieldConstants.stampTimeLastText:
+                    DateTime.now().millisecondsSinceEpoch,
+              },
+            );
+            final userProfile =
+                await remoteUserProfileRepository.getUserProfileById(
+              userID: conversationUserId,
+            );
+            await remoteStorageRepository.uploadFile(
+              file: File(path),
+              filePath: "messages/${conversation.id}/$uuid",
+              fileName: uuid,
+            );
+            if (userProfile != null) {
+              await FcmHandler.sendMessage(
+                notification: {
+                  'title': userProfile.fullName,
+                  'body': "Gửi một tin nhắn thoại",
+                },
+                tokenUserFriend: userProfile.messagingToken ?? "",
+                tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
+                data: {
+                  "conversationId": conversation.id!,
+                  "ownerUserId": ownerUserProfile.id!,
+                },
+              );
+            }
+          }
           emit(
             InitializeMessageState(
               userprofile: ownerUserProfile,
@@ -354,11 +436,9 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     );
     on<DeleteRecorderEvent>(
       (event, emit) async {
-        if (recorder.isRecording) {
-          await recorder.stopRecorder();
-          await recorder.deleteRecord(fileName: 'audio');
-          // _sinkRecorder.add(false);
-        }
+        await recorder.stopRecorder();
+        await recorder.deleteRecord(fileName: 'audio');
+        _sinkRecorder.add(false);
         emit(
           InitializeMessageState(
             userprofile: ownerUserProfile,
@@ -369,8 +449,8 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     );
     on<PauseRecorderEvent>(
       (event, emit) async {
-        _sinkPauseRecorder.add(true);
         await recorder.pauseRecorder();
+        _sinkPauseRecorder.add(true);
         emit(
           InitializeMessageState(
             userprofile: ownerUserProfile,
@@ -381,8 +461,8 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     );
     on<ResumeRecorderEvent>(
       (event, emit) async {
-        _sinkPauseRecorder.add(false);
         await recorder.resumeRecorder();
+        _sinkPauseRecorder.add(false);
         emit(
           InitializeMessageState(
             userprofile: ownerUserProfile,

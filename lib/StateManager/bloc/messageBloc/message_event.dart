@@ -33,6 +33,10 @@ class SendImageMessageEvent extends MessageEvent {
   });
 }
 
+class SendAudioMessageEvent extends MessageEvent {
+  SendAudioMessageEvent();
+}
+
 class UpdateContentTextEvent extends MessageEvent {
   final String value;
   UpdateContentTextEvent({
