@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../StateManager/bloc/SearchChatBloc/search_chat_bloc.dart';
 import '../../../StateManager/bloc/SearchChatBloc/search_chat_event.dart';
+import '../../../UIData/image_sources.dart';
 import '../../../constants/constant.dart';
 import '../../../models/user_presence.dart';
 import '../../../models/user_profile.dart';
@@ -103,7 +104,7 @@ class _SearchUserProfileItemState extends State<SearchUserProfileItem> {
                             return CircleAvatar(
                               backgroundColor: Colors.cyan[100],
                               backgroundImage: const AssetImage(
-                                "assets/images/defaultImage.png",
+                                ImageSources.imgDefault,
                               ),
                             );
                           default:

@@ -28,17 +28,21 @@ class RemoteConversationRepository implements ConversationRepository {
           descending: true,
         )
         .snapshots()
-        .map((value) {
-      if (value.size == 0 || value.docs.isEmpty) {
-        return null;
-      }
-      return value.docs.map((e) {
-        return _parsedConversation(
-          e.data(),
-          e.id,
+        .map(
+      (value) {
+        if (value.size == 0 || value.docs.isEmpty) {
+          return null;
+        }
+        return value.docs.map(
+          (e) {
+            return _parsedConversation(
+              e.data(),
+              e.id,
+            );
+          },
         );
-      });
-    });
+      },
+    );
   }
 
   @override

@@ -1,14 +1,27 @@
+import 'package:hive/hive.dart';
+
 import '../repositories/constants/messages_field_constants.dart';
 
+part 'message.g.dart';
+@HiveType(typeId: 0)
 class Message {
+  @HiveField(0)
   String? id;
+  @HiveField(1)
   final String senderId;
+  @HiveField(2)
   final String chatId;
+  @HiveField(3)
   final String? content;
+  @HiveField(4)
   final List<String> listNameImage;
+  @HiveField(5)
   final String? nameRecord;
+  @HiveField(6)
   final DateTime stampTime;
+  @HiveField(7)
   final String typeMessage;
+  @HiveField(8)
   final String messageStatus;
 
   Message({

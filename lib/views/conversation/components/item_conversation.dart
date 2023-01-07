@@ -3,9 +3,9 @@ import 'package:flutter_basic_utilities/flutter_basic_utilities.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../StateManager/bloc/chatBloc/chat_bloc.dart';
-import '../../../StateManager/bloc/chatBloc/chat_event.dart';
+import '../../../StateManager/bloc/conversationBloc/conversation_bloc.dart';
 import '../../../extensions/localization.dart';
+import '../../../helpers/navigation/helper_navigation.dart';
 import '../../../models/conversation.dart';
 import '../../../models/user_presence.dart';
 import '../../../models/user_profile.dart';
@@ -13,6 +13,7 @@ import '../../../utilities/format_date.dart';
 import '../../../widget/observer.dart';
 import '../../../widget/offline_icon_widget.dart';
 import '../../../widget/online_icon_widget.dart';
+import '../../messageChat/message_chat_page.dart';
 
 class ItemConversation extends StatefulWidget {
   const ItemConversation({
@@ -26,22 +27,22 @@ class ItemConversation extends StatefulWidget {
 }
 
 class _ItemConversationState extends State<ItemConversation> {
-  String _getIdUserConversation(ChatBloc chatBloc) {
+  String _getIdUserConversation(ConversationBloc conversationBloc) {
     if (widget.conversation.listUser.length == 1) {
       return widget.conversation.listUser.first;
     }
     return widget.conversation.listUser.firstWhere(
-      (element) => element != chatBloc.userProfile.id,
+      (element) => element != conversationBloc.userProfile.id,
     );
   }
 
   String _handleMessageChat(
     BuildContext context,
-    ChatBloc chatBloc,
+    ConversationBloc conversationBloc,
     String conversationUserId,
   ) {
     if (conversationUserId != "") {
-      if (conversationUserId == chatBloc.userProfile.id) {
+      if (conversationUserId == conversationBloc.userProfile.id) {
         return "${context.loc.you}: ";
       } else {
         return "";
@@ -53,20 +54,30 @@ class _ItemConversationState extends State<ItemConversation> {
 
   @override
   Widget build(BuildContext context) {
-    final chatBloc = context.read<ChatBloc>();
+    final conversationBloc = context.read<ConversationBloc>();
 
-    final conversationUserId = _getIdUserConversation(chatBloc);
+    final conversationUserId = _getIdUserConversation(conversationBloc);
 
     final handleMessage = _handleMessageChat(
       context,
-      chatBloc,
+      conversationBloc,
       conversationUserId,
     );
     return InkWell(
-      onTap: () {
-        chatBloc.add(
-          JoinChatEvent(conversation: widget.conversation),
+      onTap: () async {
+        await HelperNavigation.push(
+          context: context,
+          widget: MessageChatPage(
+            conversation: widget.conversation,
+            ownerUserProfile: conversationBloc.userProfile,
+          ),
+          routeSettings: RouteSettings(
+            name: "conversation:${widget.conversation.id ?? ""}",
+          ),
         );
+        // conversationBloc.add(
+        //   JoinConversationEvent(conversation: widget.conversation),
+        // );
       },
       child: ListTile(
         leading: Stack(
@@ -74,7 +85,7 @@ class _ItemConversationState extends State<ItemConversation> {
           alignment: AlignmentDirectional.bottomCenter,
           children: [
             Observer<String?>(
-              stream: chatBloc.remoteStorageRepository
+              stream: conversationBloc.remoteStorageRepository
                   .getFile(
                     filePath: "userProfile",
                     fileName: conversationUserId,
@@ -88,7 +99,7 @@ class _ItemConversationState extends State<ItemConversation> {
               },
             ),
             Observer<UserPresence?>(
-              stream: chatBloc.remoteUserPresenceRepository
+              stream: conversationBloc.remoteUserPresenceRepository
                   .getUserPresenceById(
                     userID: conversationUserId,
                   )
@@ -110,10 +121,8 @@ class _ItemConversationState extends State<ItemConversation> {
           ],
         ),
         title: Observer<UserProfile?>(
-          stream: chatBloc.remoteUserProfileRepository
-              .getUserProfileById(userID: conversationUserId)
-              .asStream(),
-          
+          stream: conversationBloc.remoteUserProfileRepository
+              .getUserProfileById(userID: conversationUserId),
           onSuccess: (context, data) {
             return textWidget(
               text: data?.fullName ?? "Unknown",

@@ -1,13 +1,26 @@
+import 'package:hive/hive.dart';
+
 import '../repositories/constants/conversation_field_constants.dart';
 
+part 'conversation.g.dart';
+
+@HiveType(typeId: 0)
 class Conversation {
+  @HiveField(0)
   String? id;
+  @HiveField(1)
   final DateTime stampTime;
+  @HiveField(2)
   final DateTime stampTimeLastText;
+  @HiveField(3)
   final String lastText;
+  @HiveField(4)
   String? nameChat = "";
+  @HiveField(5)
   bool isActive;
+  @HiveField(6)
   final String typeMessage;
+  @HiveField(7)
   List<String> listUser = [];
 
   Conversation({

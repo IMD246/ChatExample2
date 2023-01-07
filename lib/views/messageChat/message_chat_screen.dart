@@ -102,7 +102,7 @@ class MessageChatScreen extends StatelessWidget {
                     stream: messageBloc.remoteUserProfileRepository
                         .getUserProfileById(
                             userID: messageBloc.conversationUserId)
-                        .asStream(),
+                      ,
                     onSuccess: (context, data) {
                       final user = data;
                       return textWidget(

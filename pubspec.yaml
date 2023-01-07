@@ -79,6 +79,7 @@ dependencies:
   video_player: ^2.4.10
   flutter_sound: ^9.2.13
   audioplayers: ^1.2.0
+  build_runner: ^2.3.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

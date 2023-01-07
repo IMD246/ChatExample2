@@ -3,49 +3,52 @@ import 'package:flutter_basic_utilities/flutter_basic_utilities.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-import '../../../StateManager/bloc/chatBloc/chat_bloc.dart';
-import '../../../StateManager/bloc/chatBloc/chat_event.dart';
+import '../../../StateManager/bloc/conversationBloc/conversation_bloc.dart';
 import '../../../extensions/localization.dart';
+import '../../../helpers/navigation/helper_navigation.dart';
 import '../../../models/conversation.dart';
 import '../../../models/user_profile.dart';
 import '../../../widget/observer.dart';
+import '../../searchChat/search_chat_page.dart';
+import '../../setting/components/setting_screen.dart';
 import 'list_conversation.dart';
 
 class BodyConversationScreen extends StatelessWidget {
   const BodyConversationScreen({
     super.key,
     required this.userProfile,
+    required this.urlUserProfile,
   });
   final UserProfile userProfile;
+  final String? urlUserProfile;
   @override
   Widget build(BuildContext context) {
     final statusConnection = Provider.of<bool>(context);
-    final chatBLoc = context.read<ChatBloc>();
+    final conversationBloc = context.read<ConversationBloc>();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
         automaticallyImplyLeading: false,
-        leading: Observer<String?>(
-          stream: chatBLoc.remoteStorageRepository
-              .getFile(
-                filePath: "userProfile",
-                fileName: chatBLoc.userProfile.id!,
-              )
-              .asStream(),
-          onSuccess: (context, data) {
-            return GestureDetector(
-              onTap: () {
-                chatBLoc.add(
-                  GoToMenuSettingEvent(),
-                );
-              },
-              child: circleImageWidget(
-                urlImage: data ??
-                    "https://i.stack.imgur.com/l60Hf.png",
-                radius: 20.h,
+        leading: GestureDetector(
+          onTap: () async {
+            await HelperNavigation.push(
+              context: context,
+              widget: SettingScreen(
+                userProfile: userProfile,
               ),
             );
+            // .then(
+            //   (value) {
+            //     if (value != null) {
+            //       chatBLoc.userProfile.fullName = value;
+            //     }
+            //   },
+            // );
           },
+          child: circleImageWidget(
+            urlImage: urlUserProfile ?? "https://i.stack.imgur.com/l60Hf.png",
+            radius: 20.h,
+          ),
         ),
         title: textWidget(
           text: context.loc.chat,
@@ -78,20 +81,20 @@ class BodyConversationScreen extends StatelessWidget {
             ),
             searchWidget(context),
             Observer<Iterable<Conversation>?>(
-              stream: chatBLoc.remoteConversationRepository
-                  .getConversationsByUserId(
-                userId: userProfile.id!,
-              ),
+              stream: conversationBloc.streamConversations,
               onSuccess: (context, data) {
                 final listConversation = data;
                 if (listConversation == null || listConversation.isEmpty) {
                   return Padding(
                     padding: EdgeInsets.only(top: 280.0.h),
                     child: TextButton(
-                      onPressed: () {
-                        context.read<ChatBloc>().add(
-                              GoToSearchFriendChatEvent(),
-                            );
+                      onPressed: () async {
+                        await HelperNavigation.push(
+                          context: context,
+                          widget: SearchChatPage(
+                            ownerUserProfile: userProfile,
+                          ),
+                        );
                       },
                       child: textWidget(
                         text: "Let find some chat",
@@ -114,10 +117,13 @@ class BodyConversationScreen extends StatelessWidget {
   Widget searchWidget(BuildContext context) {
     return Center(
       child: InkWell(
-        onTap: () {
-          context.read<ChatBloc>().add(
-                GoToSearchFriendChatEvent(),
-              );
+        onTap: () async {
+          await HelperNavigation.push(
+            context: context,
+            widget: SearchChatPage(
+              ownerUserProfile: userProfile,
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(20.w),
         child: Container(

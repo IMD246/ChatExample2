@@ -25,7 +25,9 @@ class SearchChatBloc extends Bloc<SearchChatEvent, SearchChatState> {
 
   ReplaySubject<List<UserProfile>?> subjectListUserOutputSearch =
       ReplaySubject<List<UserProfile>>();
+
   String? searchText;
+
   SearchChatBloc({
     required this.remoteStorageRepository,
     required this.remoteUserProfileRepository,
@@ -114,10 +116,9 @@ class SearchChatBloc extends Bloc<SearchChatEvent, SearchChatState> {
           if (conversation != null) {
             emit(
               GoToConversationRoomSearchChatState(
-                userPresence: event.userPresence,
-                conversation: conversation,
-                searchText: event.searchText
-              ),
+                  userPresence: event.userPresence,
+                  conversation: conversation,
+                  searchText: event.searchText),
             );
           } else {
             emit(
@@ -127,7 +128,7 @@ class SearchChatBloc extends Bloc<SearchChatEvent, SearchChatState> {
             );
           }
         } catch (e) {
-          print(e.toString());
+          log(e.toString());
           emit(
             SearchingSearchChatState(
               subjectListUserProfile: subjectListUserOutputSearch,

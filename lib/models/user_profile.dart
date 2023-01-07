@@ -1,10 +1,19 @@
 import 'dart:convert';
 
+import 'package:hive/hive.dart';
+
+part 'user_profile.g.dart';
+@HiveType(typeId: 0)
 class UserProfile {
+  @HiveField(0)
   String? id;
+  @HiveField(1)
   final String email;
+  @HiveField(2)
   String fullName;
+  @HiveField(3)
   String? messagingToken;
+  @HiveField(4)
   bool isEmailVerified;
   UserProfile({
     this.id,

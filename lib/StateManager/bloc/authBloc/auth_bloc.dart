@@ -1,9 +1,10 @@
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../extensions/google_sign_in_extension.dart';
+import '../../../models/user_presence.dart';
+import '../../../models/user_profile.dart';
 import '../../../repositories/constants/user_profile_field_constants.dart';
 import '../../../repositories/remote_repository/remote_storage_repository.dart';
 import '../../../repositories/remote_repository/remote_user_presence_repository.dart';
@@ -15,11 +16,15 @@ import 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   FirebaseAuthProvider firebaseAuthProvider =
       FirebaseAuthProvider.getInstance();
+
   final RemoteUserProfileRepository remoteUserProfileRepository;
   final RemoteUserPresenceRepository remoteUserPresenceRepository;
   final String tokenMessaging;
   final RemoteStorageRepository remoteStorageRepository;
   final GoogleSignInExtension googleSignInExtension;
+  UserProfile? userProfile;
+  UserPresence? userPresence;
+  String? urlUserProfile;
   AuthBloc({
     required this.remoteUserProfileRepository,
     required this.remoteUserPresenceRepository,
@@ -27,7 +32,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required this.tokenMessaging,
     required this.googleSignInExtension,
   }) : super(
-          AuthStateLoggedOut(isLoading: false),
+          AuthStateLoggedOut(
+            isLoading: false,
+          ),
         ) {
     on<AuthEventInitialize>(
       (event, emit) async {
@@ -39,60 +46,120 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               AuthStateLoggedOut(isLoading: true),
             );
             //get User from cloud firestore
-            var userProfile =
-                await remoteUserProfileRepository.getUserProfileById(
+            remoteUserProfileRepository
+                .getUserProfileById(
               userID: getCurrentUser.uid,
+            )
+                .listen(
+              (event) {
+                if (event == null) {
+                  emit(
+                    AuthStateLoggedOut(
+                      isLoading: false,
+                    ),
+                  );
+                }
+                userProfile = event;
+              },
             );
             // check if userProfile null will be create
             if (userProfile == null) {
-              await remoteUserProfileRepository.createUserProfile(
-                user: getCurrentUser,
+              await remoteUserProfileRepository
+                  .createUserProfile(
+                    user: getCurrentUser,
+                  )
+                  .timeout(
+                    const Duration(
+                      seconds: 5,
+                    ),
+                  );
+            }
+            if (userProfile == null) {
+              emit(
+                AuthStateLoggedOut(isLoading: false),
               );
             }
+            // final file = await UtilsDownloadFile.getFile(userProfile!.id!);
+            // userPresence =
+            //     await remoteUserPresenceRepository.getUserPresenceById(
+            //   userID: userProfile!.id!,
+            // );
+            // if (await file.exists()) {
+            //   urlUserProfile = await remoteStorageRepository.getFile(
+            //     filePath: "userProfile",
+            //     fileName: userProfile!.id!,
+            //   );
+            // } else {
+            //   await remoteStorageRepository.uploadFile(
+            //     file: File(getCurrentUser.photoURL!),
+            //     filePath: "userProfile",
+            //     fileName: userProfile!.id!,
+            //   );
+            //   // urlUserProfile = await UtilsDownloadFile.downloadFile(
+            //   //   getCurrentUser.photoURL!,
+            //   //   userProfile!.id!,
+            //   // );
+            //   // urlUserProfile = await remoteStorageRepository.getFile(
+            //   //   filePath: "userProfile",
+            //   //   fileName: userProfile!.id!,
+            //   // );
+            // }
 
-            //get data userProfile again after created
-            userProfile = await remoteUserProfileRepository.getUserProfileById(
-              userID: getCurrentUser.uid,
-            );
+            // const userProfilePathName = "userProfile";
 
-            const userProfilePathName = "userProfile";
+            // final getUrlImageFromStorage =
+            //     await remoteStorageRepository.getFile(
+            //   filePath: userProfilePathName,
+            //   fileName: userProfile!.id!,
+            // );
 
-            final getUrlImageFromStorage =
-                await remoteStorageRepository.getFile(
-              filePath: userProfilePathName,
-              fileName: userProfile!.id!,
-            );
-
-            if (getUrlImageFromStorage == null) {
-              await remoteStorageRepository.uploadFile(
-                filePath: userProfilePathName,
-                fileName: getCurrentUser.uid,
-                file: File(
-                  getCurrentUser.photoURL ?? "",
+            // if (getUrlImageFromStorage == null) {
+            //   await remoteStorageRepository.uploadFile(
+            //     filePath: userProfilePathName,
+            //     fileName: getCurrentUser.uid,
+            //     file: File(
+            //       getCurrentUser.photoURL ?? "",
+            //     ),
+            //   );
+            // }
+            if (userProfile != null) {
+              if (userProfile!.messagingToken != tokenMessaging) {
+                //update token messaging for userProfile
+                await remoteUserProfileRepository.updateUserProfile(
+                  {
+                    UserProfileFieldConstants.userMessagingTokenField:
+                        tokenMessaging,
+                  },
+                  getCurrentUser.uid,
+                ).timeout(
+                  const Duration(
+                    seconds: 5,
+                  ),
+                );
+                userProfile!.messagingToken = tokenMessaging;
+              }
+              await remoteUserPresenceRepository
+                  .updatePresenceFieldById(
+                    userID: userProfile!.id!,
+                  )
+                  .timeout(
+                    const Duration(
+                      seconds: 5,
+                    ),
+                  );
+              emit(
+                AuthStateLoggedIn(
+                  isLoading: false,
+                  userPresence: userPresence,
+                  urlUserProfile: urlUserProfile,
+                  userProfile: userProfile!,
                 ),
               );
-            }
-            if (userProfile.messagingToken != tokenMessaging) {
-              //update token messaging for userProfile
-              await remoteUserProfileRepository.updateUserProfile(
-                {
-                  UserProfileFieldConstants.userMessagingTokenField:
-                      tokenMessaging,
-                },
-                getCurrentUser.uid,
+            } else {
+              emit(
+                AuthStateLoggedOut(isLoading: false),
               );
-              userProfile.messagingToken = tokenMessaging;
             }
-            await remoteUserPresenceRepository.updatePresenceFieldById(
-              userID: userProfile.id!,
-            );
-
-            emit(
-              AuthStateLoggedIn(
-                isLoading: false,
-                userProfile: userProfile,
-              ),
-            );
           } else {
             emit(
               AuthStateLoggedOut(isLoading: false),
@@ -114,61 +181,91 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(
             AuthStateLoggedOut(isLoading: true),
           );
-          final getSignInData = await firebaseAuthProvider.signInWithGoogle();
-          if (getSignInData != null) {
-            var userProfile =
-                await remoteUserProfileRepository.getUserProfileById(
-              userID: getSignInData.uid,
+          final getCurrentUser = await firebaseAuthProvider.signInWithGoogle();
+          if (getCurrentUser != null) {
+            emit(
+              AuthStateLoggedOut(isLoading: true),
             );
-
+            userProfile = await remoteUserProfileRepository
+                .getUserProfileById(
+                  userID: getCurrentUser.uid,
+                )
+                .first;
+            //get User from cloud firestore
             if (userProfile == null) {
-              await remoteUserProfileRepository.createUserProfile(
-                user: getSignInData,
-              );
+              await remoteUserProfileRepository
+                  .createUserProfile(
+                    user: getCurrentUser,
+                  )
+                  .timeout(const Duration(
+                    seconds: 5,
+                  ));
             }
+            userProfile = await remoteUserProfileRepository
+                .getUserProfileById(
+                  userID: getCurrentUser.uid,
+                )
+                .first;
+            // check if userProfile null will be create
+            // if (userProfile == null) {
+            //   await remoteUserProfileRepository.createUserProfile(
+            //     user: getCurrentUser,
+            //   );
+            // }
 
             //get data userProfile again after created
-            userProfile = await remoteUserProfileRepository.getUserProfileById(
-              userID: getSignInData.uid,
-            );
+            // streamUserProfile =
+            //     await remoteUserProfileRepository.getUserProfileById(
+            //   userID: getCurrentUser.uid,
+            // );
 
-            const userProfilePathName = "userProfile";
-            final getUrlImageFromStorage =
-                await remoteStorageRepository.getFile(
-              filePath: userProfilePathName,
-              fileName: userProfile!.id!,
-            );
-            if (getUrlImageFromStorage == null) {
-              await remoteStorageRepository.uploadFile(
-                filePath: userProfilePathName,
-                fileName: getSignInData.uid,
-                file: File(
-                  getSignInData.photoURL ?? "",
+            // const userProfilePathName = "userProfile";
+
+            // final getUrlImageFromStorage =
+            //     await remoteStorageRepository.getFile(
+            //   filePath: userProfilePathName,
+            //   fileName: userProfile!.id!,
+            // );
+
+            // if (getUrlImageFromStorage == null) {
+            //   await remoteStorageRepository.uploadFile(
+            //     filePath: userProfilePathName,
+            //     fileName: getCurrentUser.uid,
+            //     file: File(
+            //       getCurrentUser.photoURL ?? "",
+            //     ),
+            //   );
+            // }
+            if (userProfile != null) {
+              if (userProfile!.messagingToken != tokenMessaging) {
+                //update token messaging for userProfile
+                await remoteUserProfileRepository.updateUserProfile(
+                  {
+                    UserProfileFieldConstants.userMessagingTokenField:
+                        tokenMessaging,
+                  },
+                  getCurrentUser.uid,
+                ).timeout(const Duration(
+                  seconds: 5,
+                ));
+                userProfile!.messagingToken = tokenMessaging;
+              }
+              await remoteUserPresenceRepository
+                  .updatePresenceFieldById(
+                    userID: userProfile!.id!,
+                  )
+                  .timeout(const Duration(
+                    seconds: 5,
+                  ));
+              emit(
+                AuthStateLoggedIn(
+                  isLoading: false,
+                  userPresence: userPresence,
+                  urlUserProfile: urlUserProfile,
+                  userProfile: userProfile!,
                 ),
               );
             }
-
-            if (userProfile.messagingToken != tokenMessaging) {
-              //update token messaging for userProfile
-              await remoteUserProfileRepository.updateUserProfile(
-                {
-                  UserProfileFieldConstants.userMessagingTokenField:
-                      tokenMessaging,
-                },
-                userProfile.id!,
-              );
-              userProfile.messagingToken = tokenMessaging;
-            }
-
-            await remoteUserPresenceRepository.updatePresenceFieldById(
-              userID: userProfile.id!,
-            );
-            emit(
-              AuthStateLoggedIn(
-                isLoading: false,
-                userProfile: userProfile,
-              ),
-            );
           } else {
             emit(
               AuthStateLoggedOut(isLoading: false),
@@ -188,7 +285,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(
             AuthStateLoggedIn(
               isLoading: true,
-              userProfile: event.userProfile,
+              userPresence: userPresence,
+              urlUserProfile: urlUserProfile,
+              userProfile: userProfile!,
             ),
           );
           await firebaseAuthProvider.logout();
@@ -199,7 +298,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(
             AuthStateLoggedIn(
               isLoading: false,
-              userProfile: event.userProfile,
+              userPresence: userPresence,
+              urlUserProfile: urlUserProfile,
+              userProfile: userProfile!,
             ),
           );
         }

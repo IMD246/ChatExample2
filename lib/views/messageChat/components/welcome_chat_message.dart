@@ -56,7 +56,7 @@ class WelcomeChatMessage extends StatelessWidget {
           Observer<UserProfile?>(
             stream: messageBloc.remoteUserProfileRepository
                 .getUserProfileById(userID: messageBloc.conversationUserId)
-                .asStream(),
+             ,
             onSuccess: (context, data) {
               final user = data;
               return textWidget(

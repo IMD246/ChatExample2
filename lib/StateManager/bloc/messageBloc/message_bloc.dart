@@ -33,13 +33,13 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
   final RemoteMessagesRepository remoteMessagesRepository;
   final RemoteConversationRepository remoteConversationRepository;
 
+  late String conversationUserId;
+
   final BehaviorSubject<String> _textSubject = BehaviorSubject<String>();
 
   Stream<String> get streamText => _textSubject.stream;
 
   StreamSink<String> get _sinkText => _textSubject.sink;
-
-  late String conversationUserId;
 
   final ReplaySubject<Iterable<Message>?> _conversationsSubject =
       ReplaySubject();
@@ -86,8 +86,8 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     on<InitializingMessageEvent>(
       (event, emit) async {
         remoteMessagesRepository
-            .getMessagesByChatId(
-          chatId: conversation.id!,
+            .getMessagesByConversationId(
+          conversationId: conversation.id!,
         )
             .listen(
           (event) {
@@ -138,25 +138,25 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
             },
           );
           _sinkText.add("");
-          final userProfile =
-              await remoteUserProfileRepository.getUserProfileById(
-            userID: conversationUserId,
-          );
+          // final userProfile =
+          //     await remoteUserProfileRepository.getUserProfileById(
+          //   userID: conversationUserId,
+          // );
 
-          if (userProfile != null) {
-            await FcmHandler.sendMessage(
-              notification: {
-                'title': userProfile.fullName,
-                'body': event.content,
-              },
-              tokenUserFriend: userProfile.messagingToken ?? "",
-              tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
-              data: {
-                "conversationId": conversation.id!,
-                "ownerUserId": ownerUserProfile.id!,
-              },
-            );
-          }
+          // if (userProfile != null) {
+          //   await FcmHandler.sendMessage(
+          //     notification: {
+          //       'title': userProfile.fullName,
+          //       'body': event.content,
+          //     },
+          //     tokenUserFriend: userProfile.messagingToken ?? "",
+          //     tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
+          //     data: {
+          //       "conversationId": conversation.id!,
+          //       "ownerUserId": ownerUserProfile.id!,
+          //     },
+          //   );
+          // }
 
           emit(
             InitializeMessageState(
@@ -175,76 +175,78 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
         }
       },
     );
-    on<SendLikeMessageEvent>((event, emit) async {
-      try {
-        if (!conversation.isActive) {
+    on<SendLikeMessageEvent>(
+      (event, emit) async {
+        try {
+          if (!conversation.isActive) {
+            await remoteConversationRepository.updateConversation(
+              conversationId: conversation.id!,
+              data: {
+                ConversationFieldConstants.isActive: true,
+              },
+            );
+            conversation.isActive = true;
+          }
+          final uuid = const Uuid().v4();
+          await remoteMessagesRepository.createMessage(
+            conversationId: conversation.id!,
+            message: Message(
+              id: uuid,
+              senderId: ownerUserProfile.id!,
+              chatId: conversation.id!,
+              content: "",
+              listNameImage: [],
+              nameRecord: "",
+              stampTime: DateTime.now(),
+              typeMessage: TypeMessage.like.toString(),
+              messageStatus: MessageStatus.sent.toString(),
+            ),
+          );
           await remoteConversationRepository.updateConversation(
             conversationId: conversation.id!,
             data: {
-              ConversationFieldConstants.isActive: true,
+              ConversationFieldConstants.lastText: "Gửi một like tin nhắn",
+              ConversationFieldConstants.stampTimeLastText:
+                  DateTime.now().millisecondsSinceEpoch,
             },
           );
-          conversation.isActive = true;
-        }
-        final uuid = const Uuid().v4();
-        await remoteMessagesRepository.createMessage(
-          conversationId: conversation.id!,
-          message: Message(
-            id: uuid,
-            senderId: ownerUserProfile.id!,
-            chatId: conversation.id!,
-            content: "",
-            listNameImage: [],
-            nameRecord: "",
-            stampTime: DateTime.now(),
-            typeMessage: TypeMessage.like.toString(),
-            messageStatus: MessageStatus.sent.toString(),
-          ),
-        );
-        await remoteConversationRepository.updateConversation(
-          conversationId: conversation.id!,
-          data: {
-            ConversationFieldConstants.lastText: "Gửi một like tin nhắn",
-            ConversationFieldConstants.stampTimeLastText:
-                DateTime.now().millisecondsSinceEpoch,
-          },
-        );
-        final userProfile =
-            await remoteUserProfileRepository.getUserProfileById(
-          userID: conversationUserId,
-        );
+          // final userProfile =
+          //     await remoteUserProfileRepository.getUserProfileById(
+          //   userID: conversationUserId,
+          // );
 
-        if (userProfile != null) {
-          await FcmHandler.sendMessage(
-            notification: {
-              'title': userProfile.fullName,
-              'body': "Gửi một like tin nhắn",
-            },
-            tokenUserFriend: userProfile.messagingToken ?? "",
-            tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
-            data: {
-              "conversationId": conversation.id!,
-              "ownerUserId": ownerUserProfile.id!,
-            },
+          // if (userProfile != null) {
+          //   await FcmHandler.sendMessage(
+          //     notification: {
+          //       'title': userProfile.fullName,
+          //       'body': "Gửi một like tin nhắn",
+          //     },
+          //     tokenUserFriend: userProfile.messagingToken ?? "",
+          //     tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
+          //     data: {
+          //       "conversationId": conversation.id!,
+          //       "ownerUserId": ownerUserProfile.id!,
+          //     },
+          //   );
+          // }
+
+          emit(
+            InitializeMessageState(
+              userprofile: ownerUserProfile,
+              streamText: streamText,
+            ),
+          );
+        } catch (e) {
+          log(e.toString());
+          emit(
+            InitializeMessageState(
+              userprofile: ownerUserProfile,
+              streamText: streamText,
+            ),
           );
         }
-
-        emit(
-          InitializeMessageState(
-            userprofile: ownerUserProfile,
-            streamText: streamText,
-          ),
-        );
-      } catch (e) {
-        log(e.toString());
-        emit(
-          InitializeMessageState(
-            userprofile: ownerUserProfile,
-            streamText: streamText,
-          ),
-        );
-      }
-    });
+      },
+    );
     on<SendImageMessageEvent>(
       (event, emit) async {
         try {
@@ -286,7 +288,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
             },
           );
           final userProfile =
-              await remoteUserProfileRepository.getUserProfileById(
+              await remoteUserProfileRepository.getUserProfileByIdAsync(
             userID: conversationUserId,
           );
           await remoteStorageRepository.uploadMultipleFile(
@@ -307,7 +309,6 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
               },
             );
           }
-
           emit(
             InitializeMessageState(
               userprofile: ownerUserProfile,
@@ -366,7 +367,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
               },
             );
             final userProfile =
-                await remoteUserProfileRepository.getUserProfileById(
+                await remoteUserProfileRepository.getUserProfileByIdAsync(
               userID: conversationUserId,
             );
             await remoteStorageRepository.uploadFile(
@@ -517,7 +518,6 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
         const Duration(milliseconds: 500),
       );
     }
-
     _statusInitRecorder = true;
   }
 

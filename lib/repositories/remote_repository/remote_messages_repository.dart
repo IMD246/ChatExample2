@@ -38,11 +38,11 @@ class RemoteMessagesRepository implements MessagesRepository {
   }
 
   @override
-  Stream<Iterable<Message>?> getMessagesByChatId({
-    required String chatId,
+  Stream<Iterable<Message>?> getMessagesByConversationId({
+    required String conversationId,
   }) {
     return collectionRefMessages
-        .doc(chatId)
+        .doc(conversationId)
         .collection(MessagesFieldConstants.collectionChildName)
         .orderBy(MessagesFieldConstants.stampTimeField, descending: false)
         .snapshots()
@@ -63,35 +63,35 @@ class RemoteMessagesRepository implements MessagesRepository {
     );
   }
 
-  Future<Iterable<Message>?> getMessagesByChatIdAsync({
-    required String chatId,
-  }) async {
-    return await collectionRefMessages
-        .doc(chatId)
-        .collection(MessagesFieldConstants.collectionChildName)
-        .orderBy(MessagesFieldConstants.stampTimeField, descending: false)
-        .get()
-        .then(
-      (event) async {
-        if (event.docs.isEmpty || event.size <= 0) {
-          return [];
-        }
-        final ReceivePort receivePort = ReceivePort();
-        final isolate = await Isolate.spawn(
-          _parsedListMessage,
-          [
-            receivePort.sendPort,
-            event.docs,
-          ],
-        );
-        final data = await receivePort.first as Iterable<Message>?;
-        isolate.kill(
-          priority: Isolate.immediate,
-        );
-        return data;
-      },
-    );
-  }
+  // Future<Iterable<Message>?> getMessagesByChatIdAsync({
+  //   required String chatId,
+  // }) async {
+  //   return await collectionRefMessages
+  //       .doc(chatId)
+  //       .collection(MessagesFieldConstants.collectionChildName)
+  //       .orderBy(MessagesFieldConstants.stampTimeField, descending: false)
+  //       .get()
+  //       .then(
+  //     (event) async {
+  //       if (event.docs.isEmpty || event.size <= 0) {
+  //         return [];
+  //       }
+  //       final ReceivePort receivePort = ReceivePort();
+  //       final isolate = await Isolate.spawn(
+  //         _parsedListMessage,
+  //         [
+  //           receivePort.sendPort,
+  //           event.docs,
+  //         ],
+  //       );
+  //       final data = await receivePort.first as Iterable<Message>?;
+  //       isolate.kill(
+  //         priority: Isolate.immediate,
+  //       );
+  //       return data;
+  //     },
+  //   );
+  // }
 }
 
 _parsedListMessage(List<dynamic> params) {

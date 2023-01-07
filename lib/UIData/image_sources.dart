@@ -9,6 +9,8 @@ class ImageSources {
 
   static const imgGooleIcon = "${imgDir}google_icon.png";
 
+  static const imgDefault = "${imgDir}default_profile.png";
+
   static const imgDarkMode = "${imgDir}darkmode.png";
 
   static const imgLanguage = "${imgDir}languages.png";

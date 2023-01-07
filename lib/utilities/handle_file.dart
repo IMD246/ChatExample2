@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
@@ -13,5 +14,12 @@ class UtilsDownloadFile {
     File file = File(filePath);
     await file.writeAsBytes(response.bodyBytes);
     return filePath;
+  }
+
+  static Future<File> getFile(String fileName) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/$fileName';
+    File file = File(filePath);
+    return file;
   }
 }

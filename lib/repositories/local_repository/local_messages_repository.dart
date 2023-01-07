@@ -38,11 +38,11 @@ class LocalMessagesRepository implements MessagesRepository {
   }
 
   @override
-  Stream<Iterable<Message>?> getMessagesByChatId({
-    required String chatId,
+  Stream<Iterable<Message>?> getMessagesByConversationId({
+    required String conversationId,
   }) {
     return collectionRefMessages
-        .doc(chatId)
+        .doc(conversationId)
         .collection(MessagesFieldConstants.collectionChildName)
         .orderBy(MessagesFieldConstants.stampTimeField, descending: false)
         .snapshots()

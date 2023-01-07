@@ -8,8 +8,9 @@ abstract class ConversationRepository {
     required List<String> listUserIdConversation,
     required Conversation conversation,
   });
-  Future<Conversation?> getConversationByListUserId(
-      {required List<String> listUserId});
+  Future<Conversation?> getConversationByListUserId({
+    required List<String> listUserId,
+  });
   Future<void> updateConversation({
     required String conversationId,
     required Map<String, dynamic> data,

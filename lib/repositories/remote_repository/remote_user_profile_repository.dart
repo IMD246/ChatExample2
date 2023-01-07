@@ -62,27 +62,24 @@ class RemoteUserProfileRepository implements UserProfileRepository {
   }
 
   @override
-  Future<UserProfile?> getUserProfileById({required String? userID}) async {
-    if (userID != null) {
-      try {
-        return await firebaseUserProfileDoc.doc(userID).get().then(
-          (value) async {
-            if (value.exists && value.id.isNotEmpty) {
-              return _parsedObjectToUserProfile(
-                value: value.data(),
-                id: userID,
-              );
-            }
+  Stream<UserProfile?> getUserProfileById({
+    required String? userID,
+  }) {
+    try {
+      return firebaseUserProfileDoc.doc(userID).snapshots().map(
+        (event) {
+          if (!event.exists) {
             return null;
-          },
-        );
-      } catch (_) {
-        return null;
-        // throw FailedQueryData();
-      }
-    } else {
-      // throw UserNotLoggedInAuthException();
-      return null;
+          }
+          return _parsedObjectToUserProfile(
+            value: event.data(),
+            id: event.id,
+          );
+        },
+      );
+    } catch (_) {
+      rethrow;
+      // throw FailedQueryData();
     }
   }
 
@@ -145,5 +142,31 @@ class RemoteUserProfileRepository implements UserProfileRepository {
           )
           .toList(),
     );
+  }
+
+  @override
+  Future<UserProfile?>? getUserProfileByIdAsync(
+      {required String? userID}) async {
+    if (userID != null) {
+      try {
+        return await firebaseUserProfileDoc.doc(userID).get().then(
+          (value) async {
+            if (value.exists && value.id.isNotEmpty) {
+              return _parsedObjectToUserProfile(
+                value: value.data(),
+                id: userID,
+              );
+            }
+            return null;
+          },
+        );
+      } catch (_) {
+        return null;
+        // throw FailedQueryData();
+      }
+    } else {
+      // throw UserNotLoggedInAuthException();
+      return null;
+    }
   }
 }
