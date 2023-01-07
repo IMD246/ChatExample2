@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
 import '../../main.dart';
+import '../../repositories/local_repository/local_conversation_repository.dart';
+import '../../repositories/local_repository/local_user_profile_repository.dart';
 import '../../repositories/remote_repository/remote_conversation_repository.dart';
 import '../../repositories/remote_repository/remote_messages_repository.dart';
 import '../../repositories/remote_repository/remote_storage_repository.dart';
@@ -21,30 +23,31 @@ import 'user_profile_provider.dart';
 List<SingleChildWidget> getListRepositoryProvider() {
   return [
     StreamProvider<bool>(
-          create: (context) => ConnectivityService().subjectStatusConnection,
-          initialData: false,
-        ),
-        ChangeNotifierProvider<ConfigAppProvider>(
-          create: (context) => ConfigAppProvider(
-            sharedPref: sharedPref,
-            noti: noti,
-            navigatorKey: GlobalKey<NavigatorState>(),
-            deviceToken: deviceToken,
-          ),
-        ),
-        ChangeNotifierProvider<ThemeProvider>(
-          create: (context) => ThemeProvider(
-            sharedPref: sharedPref,
-          ),
-        ),
-        ChangeNotifierProvider<LanguageProvider>(
-          create: (context) => LanguageProvider(
-            sharedPref,
-          ),
-        ),
+      create: (context) => ConnectivityService().subjectStatusConnection,
+      initialData: false,
+    ),
+    ChangeNotifierProvider<ConfigAppProvider>(
+      create: (context) => ConfigAppProvider(
+        sharedPref: sharedPref,
+        noti: noti,
+        navigatorKey: GlobalKey<NavigatorState>(),
+        deviceToken: deviceToken,
+      ),
+    ),
+    ChangeNotifierProvider<ThemeProvider>(
+      create: (context) => ThemeProvider(
+        sharedPref: sharedPref,
+      ),
+    ),
+    ChangeNotifierProvider<LanguageProvider>(
+      create: (context) => LanguageProvider(
+        sharedPref,
+      ),
+    ),
     ChangeNotifierProvider<UserProfileProvider>(
       create: (context) => UserProfileProvider(
         remoteUserProfileRepository: RemoteUserProfileRepository(),
+        localUserProfileRepository: LocalUserProfileRepository(),
       ),
     ),
     ChangeNotifierProvider<UserPresenceProvider>(
@@ -60,6 +63,7 @@ List<SingleChildWidget> getListRepositoryProvider() {
     ChangeNotifierProvider<ConversationProvider>(
       create: (context) => ConversationProvider(
         remoteConversationRepository: RemoteConversationRepository(),
+        localConversationRepository: LocalConversationRepository(),
       ),
     ),
     ChangeNotifierProvider<MessagesProvider>(

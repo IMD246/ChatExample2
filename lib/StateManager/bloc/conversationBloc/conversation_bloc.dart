@@ -1,10 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive/hive.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../models/conversation.dart';
-import '../../../models/user_presence.dart';
 import '../../../models/user_profile.dart';
+import '../../../repositories/local_repository/local_conversation_repository.dart';
 import '../../../repositories/remote_repository/remote_conversation_repository.dart';
 import '../../../repositories/remote_repository/remote_storage_repository.dart';
 import '../../../repositories/remote_repository/remote_user_presence_repository.dart';
@@ -17,8 +16,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   final RemoteUserProfileRepository remoteUserProfileRepository;
   final RemoteUserPresenceRepository remoteUserPresenceRepository;
   final RemoteStorageRepository remoteStorageRepository;
+  final LocalConversationRepository localConversationRepository;
   final UserProfile userProfile;
-  final UserPresence? userPresence;
   final String? urlUserProfile;
   final BehaviorSubject<Iterable<Conversation>?> _subjectConversations =
       BehaviorSubject();
@@ -28,34 +27,22 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Iterable<Conversation> conversations = [];
 
-  late Box<Conversation> _conversationBox;
-
   ConversationBloc({
-    required this.userPresence,
     required this.urlUserProfile,
     required this.userProfile,
     required this.remoteConversationRepository,
     required this.remoteUserProfileRepository,
     required this.remoteUserPresenceRepository,
     required this.remoteStorageRepository,
+    required this.localConversationRepository,
   }) : super(
           InitializeConversationState(
             userProfile: userProfile,
-            urlUserProfile: urlUserProfile,
-            userPresence: userPresence,
           ),
         ) {
-    _subjectConversations.listen(
-      (value) {
-        conversations = value ?? [];
-      },
-    );
     on<InitializeConversationEvent>(
       (event, emit) async {
-        await _init();
-        // _subjectConversations.add(
-        //   _conversationBox.values,
-        // );
+        await localConversationRepository.init();
         remoteConversationRepository
             .getConversationsByUserId(
           userId: userProfile.id!,
@@ -63,24 +50,20 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
             .listen(
           (event) async {
             _subjectConversations.add(event);
+            conversations = event ?? [];
             await _handleConversationsBox(conversations: event);
           },
+        );
+        _subjectConversations.add(
+          localConversationRepository.getConversations(),
         );
         emit(
           InitializeConversationState(
             userProfile: userProfile,
-            urlUserProfile: urlUserProfile,
-            userPresence: userPresence,
           ),
         );
       },
     );
-  }
-  Future<void> _init() async {
-    if (!Hive.isAdapterRegistered(ConversationAdapter().typeId)) {
-      Hive.registerAdapter(ConversationAdapter());
-    }
-    _conversationBox = await Hive.openBox('conversations:${userProfile.id}');
   }
 
   Future<void> _handleConversationsBox({
@@ -88,15 +71,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }) async {
     if (conversations != null) {
       for (var element in conversations) {
-        if (_conversationBox.containsKey(
-              element.id!,
-            ) ==
-            false) {
-          await _conversationBox.put(
-            element.id,
-            element,
-          );
-        }
+        await localConversationRepository.createConversation(
+          conversation: element,
+        );
       }
     }
   }

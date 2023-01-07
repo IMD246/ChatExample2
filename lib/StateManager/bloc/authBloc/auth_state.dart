@@ -1,4 +1,3 @@
-import '../../../models/user_presence.dart';
 import '../../../models/user_profile.dart';
 
 abstract class AuthState {
@@ -24,11 +23,9 @@ class AuthStateLoggedOut extends AuthState {
 
 class AuthStateLoggedIn extends AuthState {
   final UserProfile userProfile;
-  final UserPresence? userPresence;
   final String? urlUserProfile;
   AuthStateLoggedIn({
     required this.userProfile,
-    required this.userPresence,
     required this.urlUserProfile,
     required super.isLoading,
   });

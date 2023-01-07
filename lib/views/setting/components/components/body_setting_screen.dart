@@ -54,10 +54,11 @@ class BodySettingScreen extends StatelessWidget {
                       userProfile: userProfile,
                     ),
                   );
-              Navigator.popUntil(
-                context,
-                ModalRoute.withName("/"),
-              );
+
+              if (context.read<AuthBloc>().firebaseAuthProvider.currentUser ==
+                  null) {
+                Navigator.of(context).pop();
+              }
             },
           ),
           SizedBox(height: 16.h),

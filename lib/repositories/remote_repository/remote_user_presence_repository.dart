@@ -35,15 +35,26 @@ class RemoteUserPresenceRepository extends UserPresenceRepository {
       UserPresenceFieldConstants.presenceField: true,
       UserPresenceFieldConstants.stampTimeField: DateTime.now().toString(),
     };
-    await databaseUserPresenceRef.child(userID).update(
+    await databaseUserPresenceRef
+        .child(userID)
+        .update(
           presenceStatusTrue,
+        )
+        .timeout(
+          const Duration(seconds: 5),
         );
     Map<String, dynamic> presenceStatusFalse = {
       UserPresenceFieldConstants.presenceField: false,
       UserPresenceFieldConstants.stampTimeField: DateTime.now().toString(),
     };
-    await databaseUserPresenceRef.child(userID).onDisconnect().update(
+    await databaseUserPresenceRef
+        .child(userID)
+        .onDisconnect()
+        .update(
           presenceStatusFalse,
+        )
+        .timeout(
+          const Duration(seconds: 5),
         );
   }
 }

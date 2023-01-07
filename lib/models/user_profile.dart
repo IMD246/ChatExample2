@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:hive/hive.dart';
 
 part 'user_profile.g.dart';
@@ -43,11 +41,6 @@ class UserProfile {
       isEmailVerified: map['is_email_verified'],
     );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory UserProfile.fromJson(String source) =>
-      UserProfile.fromMap(json.decode(source) as Map<String, dynamic>, "");
 
   @override
   String toString() {

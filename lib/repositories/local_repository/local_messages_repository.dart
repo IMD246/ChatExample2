@@ -44,7 +44,10 @@ class LocalMessagesRepository implements MessagesRepository {
     return collectionRefMessages
         .doc(conversationId)
         .collection(MessagesFieldConstants.collectionChildName)
-        .orderBy(MessagesFieldConstants.stampTimeField, descending: false)
+        .orderBy(
+          MessagesFieldConstants.stampTimeField,
+          descending: false,
+        )
         .snapshots()
         .map(
       (event) {
@@ -89,14 +92,6 @@ class LocalMessagesRepository implements MessagesRepository {
           priority: Isolate.immediate,
         );
         return data;
-        // return event.docs.map(
-        //   (e) {
-        //     return _parsedMessage(
-        //       e.data(),
-        //       e.id,
-        //     );
-        //   },
-        // );
       },
     );
   }

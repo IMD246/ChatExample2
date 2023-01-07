@@ -9,7 +9,6 @@ import '../../StateManager/provider/conversation_provider.dart';
 import '../../StateManager/provider/storage_provider.dart';
 import '../../StateManager/provider/user_presence_provider.dart';
 import '../../StateManager/provider/user_profile_provider.dart';
-import '../../models/user_presence.dart';
 import '../../models/user_profile.dart';
 import '../../widget/animated_switcher_widget.dart';
 import 'components/body_conversation_screen.dart';
@@ -18,11 +17,9 @@ class ConversationScreen extends StatefulWidget {
   const ConversationScreen({
     Key? key,
     required this.userProfile,
-    required this.userPresence,
     required this.urlUserProfile,
   }) : super(key: key);
   final UserProfile userProfile;
-  final UserPresence? userPresence;
   final String? urlUserProfile;
   @override
   State<ConversationScreen> createState() => _ConversationScreenState();
@@ -44,7 +41,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
     return BlocProvider<ConversationBloc>(
       create: (context) => ConversationBloc(
         urlUserProfile: widget.urlUserProfile,
-        userPresence: widget.userPresence,
         userProfile: widget.userProfile,
         remoteConversationRepository:
             conversationProvider.remoteConversationRepository,
@@ -53,6 +49,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
         remoteUserProfileRepository:
             userProfileProvider.remoteUserProfileRepository,
         remoteStorageRepository: storageProvider.remoteStorageRepository,
+        localConversationRepository:
+            conversationProvider.localConversationRepository,
       )..add(
           InitializeConversationEvent(),
         ),
@@ -78,7 +76,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
     if (state is InitializeConversationState) {
       return BodyConversationScreen(
         userProfile: state.userProfile,
-        urlUserProfile: state.urlUserProfile,
+        urlUserProfile: widget.urlUserProfile,
       );
     } else {
       return const Scaffold();

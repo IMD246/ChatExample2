@@ -4,7 +4,7 @@ import '../repositories/constants/conversation_field_constants.dart';
 
 part 'conversation.g.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 1)
 class Conversation {
   @HiveField(0)
   String? id;

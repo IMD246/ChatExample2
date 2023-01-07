@@ -28,6 +28,8 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     final size = getDeviceSize(context: context);
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final connectedInternet = Provider.of<bool>(context);
+    final authBloc = context.read<AuthBloc>();
     return ScreenUtilInit(
       designSize: size,
       splitScreenMode: true,
@@ -35,8 +37,14 @@ class _AppState extends State<App> {
       builder: (context, child) {
         return BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) async {
+            if (state is AuthStateLoggedIn) {
+              if (connectedInternet) {
+                await authBloc.updateMessagingTokenUser();
+                await authBloc.updatePresence();
+              }
+            }
             if (state.isLoading) {
-              ShowLoadingParallelScreen().showLoading(
+              ShowLoadingParallelScreen().showLoadingWithoutParralel(
                 context: context,
                 isDarkMode:
                     themeProvider.themeMode == ThemeMode.dark ? true : false,
@@ -55,7 +63,6 @@ class _AppState extends State<App> {
               return ConversationScreen(
                 userProfile: state.userProfile,
                 urlUserProfile: state.urlUserProfile,
-                userPresence: state.userPresence,
               );
             } else {
               return Scaffold(

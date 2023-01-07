@@ -39,14 +39,16 @@ class _HomeAppState extends State<HomeApp> {
     final storageProvider = Provider.of<StorageProvider>(context);
     return BlocProvider<AuthBloc>(
       create: (context) => AuthBloc(
-          googleSignInExtension: GoogleSignInExtension(),
-          remoteStorageRepository: storageProvider.remoteStorageRepository,
-          remoteUserPresenceRepository:
-              userPresenceProvider.remoteUserPresenceRepository,
-          remoteUserProfileRepository:
-              userProfileProvider.remoteUserProfileRepository,
-          tokenMessaging: value.deviceToken ?? "")
-        ..add(
+        googleSignInExtension: GoogleSignInExtension(),
+        remoteStorageRepository: storageProvider.remoteStorageRepository,
+        remoteUserPresenceRepository:
+            userPresenceProvider.remoteUserPresenceRepository,
+        remoteUserProfileRepository:
+            userProfileProvider.remoteUserProfileRepository,
+        tokenMessaging: value.deviceToken ?? "",
+        localUserProfileRepository:
+            userProfileProvider.localUserProfileRepository, sharedPreferences: value.sharedPref,
+      )..add(
           AuthEventInitialize(),
         ),
       child: MaterialApp(

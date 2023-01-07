@@ -1,13 +1,6 @@
-import 'package:hive/hive.dart';
-
-part 'user_presence.g.dart';
-@HiveType(typeId: 0)
 class UserPresence {
-  @HiveField(0)
   String? id;
-  @HiveField(1)
   final DateTime stampTime;
-  @HiveField(2)
   bool presence = false;
   UserPresence(
     this.id,
