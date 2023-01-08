@@ -15,23 +15,17 @@ import '../../../widget/offline_icon_widget.dart';
 import '../../../widget/online_icon_widget.dart';
 import '../../messageChat/message_chat_page.dart';
 
-class ItemConversation extends StatefulWidget {
+class ItemConversation extends StatelessWidget {
   const ItemConversation({
     super.key,
     required this.conversation,
   });
   final Conversation conversation;
-
-  @override
-  State<ItemConversation> createState() => _ItemConversationState();
-}
-
-class _ItemConversationState extends State<ItemConversation> {
   String _getIdUserConversation(ConversationBloc conversationBloc) {
-    if (widget.conversation.listUser.length == 1) {
-      return widget.conversation.listUser.first;
+    if (conversation.listUser.length == 1) {
+      return conversation.listUser.first;
     }
-    return widget.conversation.listUser.firstWhere(
+    return conversation.listUser.firstWhere(
       (element) => element != conversationBloc.userProfile.id,
     );
   }
@@ -63,21 +57,19 @@ class _ItemConversationState extends State<ItemConversation> {
       conversationBloc,
       conversationUserId,
     );
+
     return InkWell(
       onTap: () async {
         await HelperNavigation.push(
           context: context,
           widget: MessageChatPage(
-            conversation: widget.conversation,
+            conversation: conversation,
             ownerUserProfile: conversationBloc.userProfile,
           ),
           routeSettings: RouteSettings(
-            name: "conversation:${widget.conversation.id ?? ""}",
+            name: "conversation:${conversation.id}",
           ),
         );
-        // conversationBloc.add(
-        //   JoinConversationEvent(conversation: widget.conversation),
-        // );
       },
       child: ListTile(
         leading: Stack(
@@ -134,14 +126,14 @@ class _ItemConversationState extends State<ItemConversation> {
             Flexible(
               child: textWidget(
                 maxLines: 1,
-                text: handleMessage + (widget.conversation.lastText),
+                text: handleMessage + (conversation.lastText),
                 textOverflow: TextOverflow.ellipsis,
               ),
             ),
             SizedBox(width: 16.w),
             textWidget(
               text: differenceInCalendarDaysLocalization(
-                widget.conversation.stampTimeLastText,
+                conversation.stampTimeLastText,
                 context,
               ),
             ),

@@ -34,9 +34,11 @@ import 'package:flutter/material.dart';
 // }
 
 class RoutesHandler {
-  static bool checkChatPage(
-      {required String pathValue, required String idChat}) {
-    if (pathValue.contains("chat:$idChat") == true) {
+  static bool checkChatPage({
+    required String pathValue,
+    required String idConversation,
+  }) {
+    if (pathValue == "conversation:$idConversation") {
       return true;
     }
     return false;

@@ -1,3 +1,4 @@
+import '../../../models/conversation.dart';
 import '../../../models/user_profile.dart';
 
 abstract class ConversationState {
@@ -8,7 +9,11 @@ abstract class ConversationState {
 }
 
 class InitializeConversationState extends ConversationState {
+  final Stream<Iterable<Conversation>?> streamConversations;
+  final String conversationsUserId;
   InitializeConversationState({
     required super.userProfile,
+    required this.streamConversations,
+    required this.conversationsUserId,
   });
 }

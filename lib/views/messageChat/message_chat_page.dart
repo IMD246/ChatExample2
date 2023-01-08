@@ -35,7 +35,6 @@ class _MessageChatPageState extends State<MessageChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    // final configProvider = Provider.of<ConfigAppProvider>(context);
     final userProfileProvider = Provider.of<UserProfileProvider>(context);
     final userPresenceProvider = Provider.of<UserPresenceProvider>(context);
     final storageProvider = Provider.of<StorageProvider>(context);

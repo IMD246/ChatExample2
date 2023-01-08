@@ -9,8 +9,10 @@ import '../../../constants/constant.dart';
 class NotificationService {
   final ReplaySubject<Map<String, dynamic>?> onNotificationClick =
       ReplaySubject<Map<String, dynamic>?>();
+
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
   Future<void> initNotification() async {
     const AndroidInitializationSettings androidInitializationSettings =
         AndroidInitializationSettings('@mipmap/chat_icon');
@@ -68,7 +70,9 @@ class NotificationService {
 
   void onDidReceiveNotificationResponse(NotificationResponse details) {
     if (details.payload != null || details.payload!.isNotEmpty) {
-      onNotificationClick.add(jsonDecode(details.payload!));
+      onNotificationClick.sink.add(
+        jsonDecode(details.payload!),
+      );
     }
   }
 }

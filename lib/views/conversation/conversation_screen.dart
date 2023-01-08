@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../StateManager/bloc/conversationBloc/conversation_bloc.dart';
 import '../../StateManager/bloc/conversationBloc/conversation_event.dart';
 import '../../StateManager/bloc/conversationBloc/conversation_state.dart';
+import '../../StateManager/provider/config_app_provider.dart';
 import '../../StateManager/provider/conversation_provider.dart';
 import '../../StateManager/provider/storage_provider.dart';
 import '../../StateManager/provider/user_presence_provider.dart';
@@ -38,6 +39,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
     final userPresenceProvider = Provider.of<UserPresenceProvider>(context);
     final storageProvider = Provider.of<StorageProvider>(context);
     final conversationProvider = Provider.of<ConversationProvider>(context);
+    final configAppProvider = Provider.of<ConfigAppProvider>(context);
     return BlocProvider<ConversationBloc>(
       create: (context) => ConversationBloc(
         urlUserProfile: widget.urlUserProfile,
@@ -56,12 +58,14 @@ class _ConversationScreenState extends State<ConversationScreen> {
         ),
       child: BlocConsumer<ConversationBloc, ConversationState>(
         listener: (context, state) {
-          // if (state is InitializeConversationState) {
-          //   configAppProvider.handlerNotification(
-          //     context: context,
-          //     userInformation: state.userProfile,
-          //   );
-          // }
+          if (state is InitializeConversationState) {
+            configAppProvider.handlerNotification(
+              context: context,
+              ownerUserProfile: state.userProfile,
+              streamConversations: state.streamConversations,
+              conversationUserId: state.conversationsUserId,
+            );
+          }
         },
         builder: (context, state) {
           return AnimatedSwitcherWidget(

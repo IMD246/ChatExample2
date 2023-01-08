@@ -23,6 +23,7 @@ class LocalConversationRepository {
       }
     }
   }
+  
   Iterable<Conversation>? getConversations() {
     if (_conversationBox.isOpen) {
       return _conversationBox.values;

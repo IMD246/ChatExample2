@@ -138,25 +138,25 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
             },
           );
           _sinkText.add("");
-          // final userProfile =
-          //     await remoteUserProfileRepository.getUserProfileById(
-          //   userID: conversationUserId,
-          // );
+          final userProfile =
+              await remoteUserProfileRepository.getUserProfileByIdAsync(
+            userID: conversationUserId,
+          );
 
-          // if (userProfile != null) {
-          //   await FcmHandler.sendMessage(
-          //     notification: {
-          //       'title': userProfile.fullName,
-          //       'body': event.content,
-          //     },
-          //     tokenUserFriend: userProfile.messagingToken ?? "",
-          //     tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
-          //     data: {
-          //       "conversationId": conversation.id!,
-          //       "ownerUserId": ownerUserProfile.id!,
-          //     },
-          //   );
-          // }
+          if (userProfile != null) {
+            await FcmHandler.sendMessage(
+              notification: {
+                'title': userProfile.fullName,
+                'body': event.content,
+              },
+              tokenUserFriend: userProfile.messagingToken ?? "",
+              tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
+              data: {
+                "conversationId": conversation.id!,
+                "ownerUserId": ownerUserProfile.id!,
+              },
+            );
+          }
 
           emit(
             InitializeMessageState(
@@ -210,25 +210,25 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
                   DateTime.now().millisecondsSinceEpoch,
             },
           );
-          // final userProfile =
-          //     await remoteUserProfileRepository.getUserProfileById(
-          //   userID: conversationUserId,
-          // );
+          final userProfile =
+              await remoteUserProfileRepository.getUserProfileByIdAsync(
+            userID: conversationUserId,
+          );
 
-          // if (userProfile != null) {
-          //   await FcmHandler.sendMessage(
-          //     notification: {
-          //       'title': userProfile.fullName,
-          //       'body': "Gửi một like tin nhắn",
-          //     },
-          //     tokenUserFriend: userProfile.messagingToken ?? "",
-          //     tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
-          //     data: {
-          //       "conversationId": conversation.id!,
-          //       "ownerUserId": ownerUserProfile.id!,
-          //     },
-          //   );
-          // }
+          if (userProfile != null) {
+            await FcmHandler.sendMessage(
+              notification: {
+                'title': userProfile.fullName,
+                'body': "Gửi một like tin nhắn",
+              },
+              tokenUserFriend: userProfile.messagingToken ?? "",
+              tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
+              data: {
+                "conversationId": conversation.id!,
+                "ownerUserId": ownerUserProfile.id!,
+              },
+            );
+          }
 
           emit(
             InitializeMessageState(

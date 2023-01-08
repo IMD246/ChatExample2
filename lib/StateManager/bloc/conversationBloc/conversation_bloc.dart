@@ -19,6 +19,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   final LocalConversationRepository localConversationRepository;
   final UserProfile userProfile;
   final String? urlUserProfile;
+
   final BehaviorSubject<Iterable<Conversation>?> _subjectConversations =
       BehaviorSubject();
 
@@ -37,29 +38,38 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     required this.localConversationRepository,
   }) : super(
           InitializeConversationState(
-            userProfile: userProfile,
-          ),
+              userProfile: userProfile,
+              streamConversations:
+                  BehaviorSubject<Iterable<Conversation>?>().stream,
+              conversationsUserId: ""),
         ) {
+    _subjectConversations.listen(
+      (value) {
+        conversations = value ?? [];
+      },
+    );
     on<InitializeConversationEvent>(
       (event, emit) async {
         await localConversationRepository.init();
+        _subjectConversations.sink.add(
+          localConversationRepository.getConversations(),
+        );
         remoteConversationRepository
             .getConversationsByUserId(
           userId: userProfile.id!,
         )
             .listen(
           (event) async {
-            _subjectConversations.add(event);
+            _subjectConversations.sink.add(event);
             conversations = event ?? [];
             await _handleConversationsBox(conversations: event);
           },
         );
-        _subjectConversations.add(
-          localConversationRepository.getConversations(),
-        );
         emit(
           InitializeConversationState(
             userProfile: userProfile,
+            streamConversations: _subjectConversations.stream,
+            conversationsUserId: "''",
           ),
         );
       },
@@ -69,12 +79,13 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   Future<void> _handleConversationsBox({
     required Iterable<Conversation>? conversations,
   }) async {
-    if (conversations != null) {
-      for (var element in conversations) {
-        await localConversationRepository.createConversation(
-          conversation: element,
-        );
-      }
+    if (conversations == null) {
+      return;
+    }
+    for (var element in conversations) {
+      await localConversationRepository.createConversation(
+        conversation: element,
+      );
     }
   }
 

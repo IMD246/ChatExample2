@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_basic_utilities/widgets/circle_image_widget.dart';
 import 'package:flutter_basic_utilities/widgets/text_widget.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
@@ -22,9 +21,10 @@ class MessageChatScreen extends StatelessWidget {
     final statusConnectionInternet = Provider.of<bool>(context);
     return Scaffold(
       appBar: buildAppbar(
-          context: context,
-          messageBloc: messageBloc,
-          statusConnectionInternet: statusConnectionInternet),
+        context: context,
+        messageBloc: messageBloc,
+        statusConnectionInternet: statusConnectionInternet,
+      ),
       body: const BodyMessageChat(),
     );
   }
@@ -101,8 +101,7 @@ class MessageChatScreen extends StatelessWidget {
                   Observer<UserProfile?>(
                     stream: messageBloc.remoteUserProfileRepository
                         .getUserProfileById(
-                            userID: messageBloc.conversationUserId)
-                      ,
+                            userID: messageBloc.conversationUserId),
                     onSuccess: (context, data) {
                       final user = data;
                       return textWidget(
