@@ -14,6 +14,7 @@ import '../../../models/conversation.dart';
 import '../../../models/message.dart';
 import '../../../models/user_profile.dart';
 import '../../../repositories/constants/conversation_field_constants.dart';
+import '../../../repositories/local_repository/local_messages_repository.dart';
 import '../../../repositories/remote_repository/remote_conversation_repository.dart';
 import '../../../repositories/remote_repository/remote_messages_repository.dart';
 import '../../../repositories/remote_repository/remote_storage_repository.dart';
@@ -32,7 +33,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
   final RemoteUserPresenceRepository remoteUserPresenceRepository;
   final RemoteMessagesRepository remoteMessagesRepository;
   final RemoteConversationRepository remoteConversationRepository;
-
+  final LocalMessagesRepository localMessageRepository;
   late String conversationUserId;
 
   final BehaviorSubject<String> _textSubject = BehaviorSubject<String>();
@@ -66,7 +67,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
 
   bool _statusInitRecorder = false;
 
-  final FlutterSoundRecorder recorder = FlutterSoundRecorder();
+  late final FlutterSoundRecorder recorder;
 
   MessageBloc({
     required this.remoteMessagesRepository,
@@ -76,24 +77,38 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     required this.remoteStorageRepository,
     required this.remoteUserPresenceRepository,
     required this.remoteConversationRepository,
+    required this.localMessageRepository,
   }) : super(
           InitializeMessageState(
             userprofile: ownerUserProfile,
             streamText: BehaviorSubject<String>().stream,
           ),
         ) {
+    recorder = FlutterSoundRecorder();
     _getConversationUserId();
     on<InitializingMessageEvent>(
       (event, emit) async {
+        await localMessageRepository.init(
+          conversationId: conversation.id!,
+        );
+        final conversationsLocal =
+            localMessageRepository.getMessages().toList();
+
+        _conversationSink.add(
+          conversationsLocal.reversed,
+        );
+
         remoteMessagesRepository
             .getMessagesByConversationId(
           conversationId: conversation.id!,
         )
             .listen(
-          (event) {
+          (event) async {
             _conversationSink.add(event);
+            await _createOrUpdateMessageLocal(event);
           },
         );
+
         emit(
           InitializeMessageState(
             userprofile: ownerUserProfile,
@@ -150,7 +165,6 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
                 'body': event.content,
               },
               tokenUserFriend: userProfile.messagingToken ?? "",
-              tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
               data: {
                 "conversationId": conversation.id!,
                 "ownerUserId": ownerUserProfile.id!,
@@ -222,7 +236,6 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
                 'body': "Gửi một like tin nhắn",
               },
               tokenUserFriend: userProfile.messagingToken ?? "",
-              tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
               data: {
                 "conversationId": conversation.id!,
                 "ownerUserId": ownerUserProfile.id!,
@@ -302,7 +315,6 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
                 'body': "Gửi ${event.result.files.length} ảnh",
               },
               tokenUserFriend: userProfile.messagingToken ?? "",
-              tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
               data: {
                 "conversationId": conversation.id!,
                 "ownerUserId": ownerUserProfile.id!,
@@ -382,7 +394,6 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
                   'body': "Gửi một tin nhắn thoại",
                 },
                 tokenUserFriend: userProfile.messagingToken ?? "",
-                tokenOwnerUser: ownerUserProfile.messagingToken ?? "",
                 data: {
                   "conversationId": conversation.id!,
                   "ownerUserId": ownerUserProfile.id!,
@@ -533,5 +544,14 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     await _conversationsSubject.close();
     await recorder.closeRecorder();
     return super.close();
+  }
+
+  Future<void> _createOrUpdateMessageLocal(Iterable<Message>? event) async {
+    if (event == null) {
+      return;
+    }
+    for (var element in event) {
+      await localMessageRepository.createMessage(message: element);
+    }
   }
 }

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:isolate';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -94,18 +93,18 @@ class RemoteMessagesRepository implements MessagesRepository {
   // }
 }
 
-_parsedListMessage(List<dynamic> params) {
-  SendPort sendPort = params[0];
-  final listObject = params[1] as List<QueryDocumentSnapshot<Object?>>;
-  sendPort.send(
-    listObject.map(
-      (e) => _parsedMessage(
-        e.data(),
-        e.id,
-      ),
-    ),
-  );
-}
+// _parsedListMessage(List<dynamic> params) {
+//   SendPort sendPort = params[0];
+//   final listObject = params[1] as List<QueryDocumentSnapshot<Object?>>;
+//   sendPort.send(
+//     listObject.map(
+//       (e) => _parsedMessage(
+//         e.data(),
+//         e.id,
+//       ),
+//     ),
+//   );
+// }
 
 Message _parsedMessage(Object? object, String id) {
   final convertToMap = json.decode(

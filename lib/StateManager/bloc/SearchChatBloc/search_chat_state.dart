@@ -5,12 +5,18 @@ import '../../../models/conversation.dart';
 import '../../../models/user_presence.dart';
 import '../../../models/user_profile.dart';
 
-abstract class SearchChatState {}
+abstract class SearchChatState {
+  final UserProfile ownerUserProfile;
+  SearchChatState({
+    required this.ownerUserProfile,
+  });
+}
 
 class InitializeSearchChatState extends SearchChatState {
   final ReplaySubject<List<UserProfile>?> behaviorSubject;
   InitializeSearchChatState({
     required this.behaviorSubject,
+    required super.ownerUserProfile
   });
 }
 
@@ -18,16 +24,16 @@ class SearchingSearchChatState extends SearchChatState {
   ReplaySubject<List<UserProfile>?> subjectListUserProfile;
   SearchingSearchChatState({
     required this.subjectListUserProfile,
+    required super.ownerUserProfile
   });
 }
 
 class GoToConversationRoomSearchChatState extends SearchChatState {
   final Conversation conversation;
-  final UserPresence? userPresence;
   final String? searchText;
   GoToConversationRoomSearchChatState({
     required this.conversation,
-    required this.userPresence,
     required this.searchText,
+    required super.ownerUserProfile,
   });
 }

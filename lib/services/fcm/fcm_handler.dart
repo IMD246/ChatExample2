@@ -6,7 +6,6 @@ class FcmHandler {
   static Future<void> sendMessage({
     required Map<String, dynamic> notification,
     required String tokenUserFriend,
-    required String tokenOwnerUser,
     required Map<String, dynamic> data,
   }) async {
     String url = 'https://fcm.googleapis.com/fcm/send';

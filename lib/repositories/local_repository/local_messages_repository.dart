@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:hive/hive.dart';
 
 import '../../models/message.dart';
@@ -24,10 +26,11 @@ class LocalMessagesRepository {
     }
   }
 
-  Iterable<Message>? getMessages() {
+  Iterable<Message> getMessages() {
     if (_messageBox.isOpen) {
+      log("check length message local:${_messageBox.values.length}");
       return _messageBox.values;
     }
-    return null;
+    return [];
   }
 }

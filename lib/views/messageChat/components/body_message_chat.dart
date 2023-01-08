@@ -1,15 +1,16 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_basic_utilities/widgets/text_widget.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:provider/provider.dart';
 
 import '../../../StateManager/bloc/messageBloc/message_bloc.dart';
 import '../../../StateManager/bloc/messageBloc/message_event.dart';
 import '../../../UIData/image_sources.dart';
 import '../../../constants/constant.dart';
 import '../../../extensions/localization.dart';
+import '../../../helpers/dialogs/error_dialog.dart';
 import '../../../models/message.dart';
 import '../../../utilities/format_date.dart';
 import 'list_message.dart';
@@ -44,6 +45,7 @@ class _BodyMessageChatState extends State<BodyMessageChat> {
   @override
   Widget build(BuildContext context) {
     final messageBloc = context.read<MessageBloc>();
+    final statusConnection = Provider.of<bool>(context);
     return Column(
       children: [
         Expanded(
@@ -102,14 +104,23 @@ class _BodyMessageChatState extends State<BodyMessageChat> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              final result = await _openFilePicker(
-                                context,
-                              );
-                              if (result != null) {
-                                messageBloc.add(
-                                  SendImageMessageEvent(
-                                    result: result,
-                                  ),
+                              if (statusConnection) {
+                                final result = await _openFilePicker(
+                                  context,
+                                );
+                                if (result != null) {
+                                  messageBloc.add(
+                                    SendImageMessageEvent(
+                                      result: result,
+                                    ),
+                                  );
+                                }
+                              } else {
+                                showErrorDialog(
+                                  context: context,
+                                  text:
+                                      "Hãy kiểm tra lại đường truyền mạng của bạn",
+                                  title: "Lỗi kết nối mạng",
                                 );
                               }
                             },
@@ -120,8 +131,15 @@ class _BodyMessageChatState extends State<BodyMessageChat> {
                             ),
                           ),
                           const RecorderIconButton(),
-                          _textFieldContainer(messageBloc, context),
-                          _sendTextIconButton(snapshot, messageBloc),
+                          _textFieldContainer(
+                            messageBloc,
+                            context,
+                          ),
+                          _sendTextIconButton(
+                            snapshot,
+                            messageBloc,
+                            statusConnection,
+                          ),
                         ],
                       );
                     } else {
@@ -213,9 +231,18 @@ class _BodyMessageChatState extends State<BodyMessageChat> {
                           ),
                           IconButton(
                             onPressed: () {
-                              messageBloc.add(
-                                SendAudioMessageEvent(),
-                              );
+                              if (statusConnection) {
+                                messageBloc.add(
+                                  SendAudioMessageEvent(),
+                                );
+                              } else {
+                                showErrorDialog(
+                                  context: context,
+                                  text:
+                                      "Hãy kiểm tra lại đường truyền mạng của bạn",
+                                  title: "Lỗi kết nối mạng",
+                                );
+                              }
                             },
                             icon: const Icon(
                               Icons.send,
@@ -301,23 +328,29 @@ class _BodyMessageChatState extends State<BodyMessageChat> {
     );
   }
 
-  IconButton _sendTextIconButton(
-    AsyncSnapshot<String> snapshot,
-    MessageBloc messageBloc,
-  ) {
+  IconButton _sendTextIconButton(AsyncSnapshot<String> snapshot,
+      MessageBloc messageBloc, bool statusConnection) {
     return IconButton(
       onPressed: () {
         textController.clear();
-        final getData = snapshot.data!;
-        if (getData.isEmpty) {
-          messageBloc.add(
-            SendLikeMessageEvent(),
-          );
+        if (statusConnection) {
+          final getData = snapshot.data!;
+          if (getData.isEmpty) {
+            messageBloc.add(
+              SendLikeMessageEvent(),
+            );
+          } else {
+            messageBloc.add(
+              SendTextMessageEvent(
+                content: getData,
+              ),
+            );
+          }
         } else {
-          messageBloc.add(
-            SendTextMessageEvent(
-              content: getData,
-            ),
+          showErrorDialog(
+            context: context,
+            text: "Hãy kiểm tra lại đường truyền mạng của bạn",
+            title: "Lỗi kết nối mạng",
           );
         }
       },

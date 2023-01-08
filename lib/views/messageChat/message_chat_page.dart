@@ -52,6 +52,7 @@ class _MessageChatPageState extends State<MessageChatPage> {
         remoteMessagesRepository: messagesProvider.remoteMessagesRepository,
         remoteConversationRepository:
             conversationProvider.remoteConversationRepository,
+        localMessageRepository: messagesProvider.localMessagesRepository,
       )..add(
           InitializingMessageEvent(),
         ),

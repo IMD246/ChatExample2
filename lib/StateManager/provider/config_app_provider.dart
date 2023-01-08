@@ -65,6 +65,20 @@ class ConfigAppProvider extends ChangeNotifier {
                 );
               }
             }
+          } else {
+            await navigator.push(
+              MaterialPageRoute(
+                builder: (context) {
+                  return MessageChatPage(
+                    conversation: checkConversation,
+                    ownerUserProfile: ownerUserProfile,
+                  );
+                },
+                settings: RouteSettings(
+                  name: "conversation:${checkConversation.id}",
+                ),
+              ),
+            );
           }
         }
       },

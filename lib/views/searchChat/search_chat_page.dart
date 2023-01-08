@@ -11,6 +11,7 @@ import '../../StateManager/provider/user_presence_provider.dart';
 import '../../StateManager/provider/user_profile_provider.dart';
 import '../../helpers/navigation/helper_navigation.dart';
 import '../../models/user_profile.dart';
+import '../messageChat/message_chat_page.dart';
 import 'components/body_search_chat_screen.dart';
 
 class SearchChatPage extends StatelessWidget {
@@ -44,17 +45,12 @@ class SearchChatPage extends StatelessWidget {
             if (state is GoToConversationRoomSearchChatState) {
               HelperNavigation.push(
                 context: context,
-                widget: Scaffold(
-                  body: Column(
-                    children: [
-                      Text(
-                        state.conversation.toString(),
-                      ),
-                      Text(
-                        state.userPresence.toString(),
-                      ),
-                    ],
-                  ),
+                widget: MessageChatPage(
+                  ownerUserProfile: state.ownerUserProfile,
+                  conversation: state.conversation,
+                ),
+                routeSettings: RouteSettings(
+                  name: "conversation:${state.conversation.id}",
                 ),
               ).then(
                 (value) {
@@ -65,20 +61,6 @@ class SearchChatPage extends StatelessWidget {
                       );
                 },
               );
-              //   MesssageScreen(
-              //  conversation: state.conversation,
-              //  ownerUserProfile: ownerUserProfile,
-              //  userPresence: state.userPresence,
-              //   ),
-              // ).then(
-              //   (value) {
-              //     context.read<SearchChatBloc>().add(
-              //           SearchingSearchChatEvent(
-              //             searchText: state.searchText,
-              //           ),
-              //         );
-              //   },
-              // );
             }
           },
           builder: (context, state) {

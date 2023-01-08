@@ -36,8 +36,8 @@ class SearchChatBloc extends Bloc<SearchChatEvent, SearchChatState> {
     required this.remoteConversationRepository,
   }) : super(
           InitializeSearchChatState(
-            behaviorSubject: ReplaySubject(),
-          ),
+              behaviorSubject: ReplaySubject(),
+              ownerUserProfile: ownerUserProfile),
         ) {
     on<InitializeSearchChatEvent>(
       (event, emit) async {
@@ -48,15 +48,15 @@ class SearchChatBloc extends Bloc<SearchChatEvent, SearchChatState> {
           subjectListUserProfileRecom.add(listUser);
           emit(
             SearchingSearchChatState(
-              subjectListUserProfile: subjectListUserProfileRecom,
-            ),
+                subjectListUserProfile: subjectListUserProfileRecom,
+                ownerUserProfile: ownerUserProfile),
           );
         } catch (e) {
           log(e.toString());
           emit(
             SearchingSearchChatState(
-              subjectListUserProfile: subjectListUserProfileRecom,
-            ),
+                subjectListUserProfile: subjectListUserProfileRecom,
+                ownerUserProfile: ownerUserProfile),
           );
         }
       },
@@ -68,8 +68,8 @@ class SearchChatBloc extends Bloc<SearchChatEvent, SearchChatState> {
           if (event.searchText == null) {
             emit(
               SearchingSearchChatState(
-                subjectListUserProfile: subjectListUserProfileRecom,
-              ),
+                  subjectListUserProfile: subjectListUserProfileRecom,
+                  ownerUserProfile: ownerUserProfile),
             );
           } else {
             final listUser =
@@ -79,8 +79,8 @@ class SearchChatBloc extends Bloc<SearchChatEvent, SearchChatState> {
             subjectListUserOutputSearch.add(listUser);
             emit(
               SearchingSearchChatState(
-                subjectListUserProfile: subjectListUserOutputSearch,
-              ),
+                  subjectListUserProfile: subjectListUserOutputSearch,
+                  ownerUserProfile: ownerUserProfile),
             );
           }
         } catch (e) {
@@ -89,8 +89,8 @@ class SearchChatBloc extends Bloc<SearchChatEvent, SearchChatState> {
           );
           emit(
             SearchingSearchChatState(
-              subjectListUserProfile: ReplaySubject(),
-            ),
+                subjectListUserProfile: ReplaySubject(),
+                ownerUserProfile: ownerUserProfile),
           );
         }
       },
@@ -116,23 +116,23 @@ class SearchChatBloc extends Bloc<SearchChatEvent, SearchChatState> {
           if (conversation != null) {
             emit(
               GoToConversationRoomSearchChatState(
-                  userPresence: event.userPresence,
                   conversation: conversation,
-                  searchText: event.searchText),
+                  searchText: event.searchText,
+                  ownerUserProfile: ownerUserProfile),
             );
           } else {
             emit(
               SearchingSearchChatState(
-                subjectListUserProfile: subjectListUserOutputSearch,
-              ),
+                  subjectListUserProfile: subjectListUserOutputSearch,
+                  ownerUserProfile: ownerUserProfile),
             );
           }
         } catch (e) {
           log(e.toString());
           emit(
             SearchingSearchChatState(
-              subjectListUserProfile: subjectListUserOutputSearch,
-            ),
+                subjectListUserProfile: subjectListUserOutputSearch,
+                ownerUserProfile: ownerUserProfile),
           );
         }
       },
