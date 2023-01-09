@@ -46,12 +46,15 @@ class _MediaMessageState extends State<MediaMessage> {
                 );
                 if (isImageExtens) {
                   return ImageMessageCard(
-                      nameImage: mediaName, messageId: widget.message.id!,);
+                    nameImage: mediaName,
+                    message: widget.message,
+                  );
                 } else {
                   return StreamBuilder<String?>(
                     stream: messageBloc.remoteStorageRepository
                         .getFile(
-                          filePath: "messages/${messageBloc.conversation.id}/${widget.message.id}",
+                          filePath:
+                              "messages/${messageBloc.conversation.id}/${widget.message.id}",
                           fileName: mediaName,
                         )
                         .asStream(),
@@ -84,7 +87,7 @@ class _MediaMessageState extends State<MediaMessage> {
                 if (isImageExtens) {
                   return ImageMessageCard(
                     nameImage: mediaName,
-                    messageId: widget.message.id!,
+                    message: widget.message,
                   );
                 } else {
                   return StreamBuilder<String?>(

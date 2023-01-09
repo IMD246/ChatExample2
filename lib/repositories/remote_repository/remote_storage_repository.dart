@@ -15,7 +15,17 @@ class RemoteStorageRepository implements StorageRepository {
   }) async {
     try {
       final refPath = "$filePath/$fileName";
-      String downloadURL = await storage.ref(refPath).getDownloadURL();
+      String downloadURL = await storage
+          .ref(refPath)
+          .getDownloadURL()
+          .timeout(
+            const Duration(seconds: 5),
+          )
+          .onError(
+        (error, stackTrace) {
+          return "";
+        },
+      );
       return downloadURL;
     } on FirebaseException catch (_) {
       return "";
