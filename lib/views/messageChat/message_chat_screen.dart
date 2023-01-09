@@ -83,7 +83,9 @@ class MessageChatScreen extends StatelessWidget {
                         .asStream(),
                     onSuccess: (context, data) {
                       return circleImageWidget(
-                        urlImage: data ?? "https://i.stack.imgur.com/l60Hf.png",
+                        urlImage: data!.isNotEmpty
+                            ? data
+                            : "https://i.stack.imgur.com/l60Hf.png",
                         radius: 20.w,
                       );
                     },

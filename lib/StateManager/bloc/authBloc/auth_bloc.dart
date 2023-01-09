@@ -97,7 +97,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             );
             await localStorageRepository.uploadFile(
               fileName: userProfile!.id!,
-              remotePath: urlImage ?? "",
+              remotePath: urlImage,
             );
             urlUserProfile.urlImage = urlImage;
             urlUserProfile.typeImage = TypeImage.remote;
@@ -179,7 +179,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
             await localStorageRepository.uploadFile(
               fileName: userProfile!.id!,
-              remotePath: urlImage ?? "",
+              remotePath: urlImage,
             );
 
             urlUserProfile.urlImage = urlImage;

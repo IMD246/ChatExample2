@@ -55,7 +55,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
 
         await localStorageRepository.uploadFile(
           fileName: userProfile.id!,
-          remotePath: url!,
+          remotePath: url,
         );
 
         emit(

@@ -46,7 +46,7 @@ class _MediaMessageState extends State<MediaMessage> {
                 );
                 if (isImageExtens) {
                   return ImageMessageCard(
-                      nameImage: mediaName, messageId: widget.message.id!);
+                      nameImage: mediaName, messageId: widget.message.id!,);
                 } else {
                   return StreamBuilder<String?>(
                     stream: messageBloc.remoteStorageRepository

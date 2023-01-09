@@ -9,7 +9,7 @@ import '../interface_repository/storage_repository.dart';
 class RemoteStorageRepository implements StorageRepository {
   final FirebaseStorage storage = FirebaseStorage.instance;
   @override
-  Future<String?> getFile({
+  Future<String> getFile({
     required String filePath,
     required String fileName,
   }) async {
@@ -18,7 +18,7 @@ class RemoteStorageRepository implements StorageRepository {
       String downloadURL = await storage.ref(refPath).getDownloadURL();
       return downloadURL;
     } on FirebaseException catch (_) {
-      return null;
+      return "";
     }
   }
 

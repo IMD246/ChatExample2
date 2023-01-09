@@ -29,7 +29,7 @@ class ImageMessageCard extends StatelessWidget {
         //   ),
         // );
       },
-      child: StreamBuilder<String?>(
+      child: StreamBuilder<String>(
         stream: messageBloc.remoteStorageRepository
             .getFile(
               filePath: "messages/${messageBloc.conversation.id}/$messageId",
@@ -40,9 +40,9 @@ class ImageMessageCard extends StatelessWidget {
           return ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: CachedNetworkImage(
-              imageUrl: snapshot.data ??
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3UppMPcVTGT6NDYTcEm84-keLZBjnyWtuQ-rdto-q&s",
-              width: MediaQuery.of(context).size.width,
+              imageUrl: snapshot.data!.isNotEmpty || snapshot.data != null
+                  ? snapshot.data!
+                  : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3UppMPcVTGT6NDYTcEm84-keLZBjnyWtuQ-rdto-q&s",
               fit: BoxFit.fill,
               placeholder: (context, url) => const CircularProgressIndicator(),
               errorWidget: (context, url, error) => const Icon(Icons.error),

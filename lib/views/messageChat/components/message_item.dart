@@ -9,6 +9,7 @@ import '../../../models/message.dart';
 import '../../../models/user_presence.dart';
 import '../../../utilities/format_date.dart';
 import '../../../utilities/handle_value.dart';
+import '../../../widget/observer.dart';
 import '../../../widget/online_icon_widget.dart';
 import 'audio_message.dart';
 import 'like_message.dart';
@@ -196,18 +197,17 @@ class _MessageItemState extends State<MessageItem> {
           clipBehavior: Clip.none,
           alignment: AlignmentDirectional.bottomCenter,
           children: [
-            StreamBuilder<String?>(
-              initialData: "",
+            Observer<String>(
               stream: messageBloc.remoteStorageRepository
                   .getFile(
                     filePath: "userProfile",
                     fileName: messageBloc.ownerUserProfile.id!,
                   )
                   .asStream(),
-              builder: (context, snapshot) {
+              onSuccess: (context, data) {
                 return circleImageWidget(
                   urlImage:
-                      snapshot.data ?? "https://i.stack.imgur.com/l60Hf.png",
+                      data!.isNotEmpty ? data : "https://i.stack.imgur.com/l60Hf.png",
                   radius: 12.w,
                 );
               },

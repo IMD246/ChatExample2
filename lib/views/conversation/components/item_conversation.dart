@@ -76,7 +76,7 @@ class ItemConversation extends StatelessWidget {
           clipBehavior: Clip.none,
           alignment: AlignmentDirectional.bottomCenter,
           children: [
-            Observer<String?>(
+            Observer<String>(
               stream: conversationBloc.remoteStorageRepository
                   .getFile(
                     filePath: "userProfile",
@@ -85,7 +85,9 @@ class ItemConversation extends StatelessWidget {
                   .asStream(),
               onSuccess: (context, data) {
                 return circleImageWidget(
-                  urlImage: data ?? "https://i.stack.imgur.com/l60Hf.png",
+                  urlImage: data!.isNotEmpty
+                      ? data
+                      : "https://i.stack.imgur.com/l60Hf.png",
                   radius: 20.w,
                 );
               },
@@ -112,12 +114,12 @@ class ItemConversation extends StatelessWidget {
             ),
           ],
         ),
-        title: Observer<UserProfile?>(
+        title: StreamBuilder<UserProfile?>(
           stream: conversationBloc.remoteUserProfileRepository
               .getUserProfileById(userID: conversationUserId),
-          onSuccess: (context, data) {
+          builder: (context, snapshot) {
             return textWidget(
-              text: data?.fullName ?? "Unknown",
+              text: snapshot.data?.fullName ?? "Unknown",
             );
           },
         ),
