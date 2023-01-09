@@ -165,7 +165,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               fileName: userProfile!.id!,
             );
 
-            if (urlImage == null) {
+            if (urlImage.isEmpty) {
               await remoteStorageRepository.uploadFile(
                 file: File(getCurrentUser.photoURL!),
                 filePath: "userProfile",
