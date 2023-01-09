@@ -43,6 +43,6 @@ class FirebaseAuthProvider {
 
   User? get currentUser {
     final User? user = FirebaseAuth.instance.currentUser;
-    return user != null ? user : null;
+    return user;
   }
 }

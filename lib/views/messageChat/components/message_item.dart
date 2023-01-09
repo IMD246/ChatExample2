@@ -10,6 +10,7 @@ import '../../../models/user_presence.dart';
 import '../../../utilities/format_date.dart';
 import '../../../utilities/handle_value.dart';
 import '../../../widget/online_icon_widget.dart';
+import 'audio_message.dart';
 import 'like_message.dart';
 import 'media_message.dart';
 import 'text_message.dart';
@@ -284,22 +285,25 @@ class _MessageItemState extends State<MessageItem> {
       return MediaMessage(
         message: message,
       );
-    }
-    // else if (TypeMessage.audio.toString() == message.typeMessage) {
-    //   final messageBloc = context.read<MessageBloc>();
-    //   return StreamBuilder<String?>(
-    //     stream: messageBloc.remoteStorageRepository.getFile(
-    //       filePath: "messages/${messageBloc.conversation.id}/${message.id}",
-    //       fileName: message.nameRecord ?? "",
-    //     ).asStream(),
-    //     builder: (context, snapshot) {
-    //       return AudioMessasge(
-    //         urlAudio: snapshot.data ?? "",
-    //       );
-    //     },
-    //   );
-    // }
-    else {
+    } else if (TypeMessage.audio.toString() == message.typeMessage) {
+      final messageBloc = context.read<MessageBloc>();
+      return StreamBuilder<String?>(
+        stream: messageBloc.remoteStorageRepository
+            .getFile(
+              filePath: "messages/${messageBloc.conversation.id}/${message.id}",
+              fileName: message.nameRecord ?? "",
+            )
+            .asStream(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return AudioMessasge(
+              urlAudio: snapshot.data ?? "",
+            );
+          }
+          return const CircularProgressIndicator();
+        },
+      );
+    } else {
       return textWidget(text: "Dont build this widget yet!");
     }
   }

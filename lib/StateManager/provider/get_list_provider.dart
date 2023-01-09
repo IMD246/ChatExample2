@@ -5,6 +5,7 @@ import 'package:provider/single_child_widget.dart';
 import '../../main.dart';
 import '../../repositories/local_repository/local_conversation_repository.dart';
 import '../../repositories/local_repository/local_messages_repository.dart';
+import '../../repositories/local_repository/local_storage_repository.dart';
 import '../../repositories/local_repository/local_user_profile_repository.dart';
 import '../../repositories/remote_repository/remote_conversation_repository.dart';
 import '../../repositories/remote_repository/remote_messages_repository.dart';
@@ -59,6 +60,7 @@ List<SingleChildWidget> getListRepositoryProvider() {
     ChangeNotifierProvider<StorageProvider>(
       create: (context) => StorageProvider(
         remoteStorageRepository: RemoteStorageRepository(),
+        localStorageRepository: LocalStorageRepository(),
       ),
     ),
     ChangeNotifierProvider<ConversationProvider>(

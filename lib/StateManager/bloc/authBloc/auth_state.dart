@@ -1,3 +1,4 @@
+import '../../../models/url_image.dart';
 import '../../../models/user_profile.dart';
 
 abstract class AuthState {
@@ -23,10 +24,10 @@ class AuthStateLoggedOut extends AuthState {
 
 class AuthStateLoggedIn extends AuthState {
   final UserProfile userProfile;
-  final String? urlUserProfile;
+  final UrlImage urlImage;
   AuthStateLoggedIn({
     required this.userProfile,
-    required this.urlUserProfile,
+    required this.urlImage,
     required super.isLoading,
   });
 }

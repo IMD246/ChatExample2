@@ -9,7 +9,6 @@ import '../../../../StateManager/bloc/settingBloc/setting_bloc.dart';
 import '../../../../StateManager/bloc/settingBloc/setting_event.dart';
 import '../../../../extensions/localization.dart';
 import '../../../../models/user_profile.dart';
-import '../../../../widget/observer.dart';
 
 class ImageAndName extends StatelessWidget {
   const ImageAndName({
@@ -30,16 +29,17 @@ class ImageAndName extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              Observer<String?>(
+              StreamBuilder<String?>(
                 stream: settingBloc.remoteStorageRepository
                     .getFile(
                       filePath: "userProfile",
                       fileName: settingBloc.userProfile.id!,
                     )
                     .asStream(),
-                onSuccess: (context, data) {
+                builder: (context, snapshot) {
                   return circleImageWidget(
-                    urlImage: data ?? "https://i.stack.imgur.com/l60Hf.png",
+                    urlImage:
+                        snapshot.data ?? "https://i.stack.imgur.com/l60Hf.png",
                     radius: 60.h,
                   );
                 },

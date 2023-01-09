@@ -80,6 +80,7 @@ dependencies:
   flutter_sound: ^9.2.13
   audioplayers: ^1.2.0
   build_runner: ^2.3.3
+  image: ^4.0.8
 dev_dependencies:
   flutter_test:
     sdk: flutter

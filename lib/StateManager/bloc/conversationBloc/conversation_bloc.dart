@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../models/conversation.dart';
+import '../../../models/url_image.dart';
 import '../../../models/user_profile.dart';
 import '../../../repositories/local_repository/local_conversation_repository.dart';
 import '../../../repositories/remote_repository/remote_conversation_repository.dart';
@@ -18,7 +19,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   final RemoteStorageRepository remoteStorageRepository;
   final LocalConversationRepository localConversationRepository;
   final UserProfile userProfile;
-  final String? urlUserProfile;
+  UrlImage urlUserProfile;
 
   final BehaviorSubject<Iterable<Conversation>?> _subjectConversations =
       BehaviorSubject();

@@ -1,12 +1,15 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../extensions/google_sign_in_extension.dart';
+import '../../../models/url_image.dart';
 import '../../../models/user_presence.dart';
 import '../../../models/user_profile.dart';
 import '../../../repositories/constants/user_profile_field_constants.dart';
+import '../../../repositories/local_repository/local_storage_repository.dart';
 import '../../../repositories/local_repository/local_user_profile_repository.dart';
 import '../../../repositories/remote_repository/remote_storage_repository.dart';
 import '../../../repositories/remote_repository/remote_user_presence_repository.dart';
@@ -29,13 +32,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   final RemoteStorageRepository remoteStorageRepository;
 
+  final LocalStorageRepository localStorageRepository;
+
   final GoogleSignInExtension googleSignInExtension;
 
   final SharedPreferences sharedPreferences;
 
   UserProfile? userProfile;
   UserPresence? userPresence;
-  String? urlUserProfile;
+  UrlImage urlUserProfile = UrlImage(
+    urlImage: "",
+    typeImage: TypeImage.remote,
+  );
   AuthBloc({
     required this.remoteUserProfileRepository,
     required this.remoteUserPresenceRepository,
@@ -44,6 +52,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required this.googleSignInExtension,
     required this.localUserProfileRepository,
     required this.sharedPreferences,
+    required this.localStorageRepository,
   }) : super(
           AuthStateLoggedOut(
             isLoading: false,
@@ -51,11 +60,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ) {
     on<AuthEventInitialize>(
       (event, emit) async {
-        emit(
-          AuthStateLoggedOut(
-            isLoading: true,
-          ),
-        );
         try {
           await localUserProfileRepository.init();
           //Get current user from FirebaseAuth
@@ -68,6 +72,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               ),
             );
           }
+
           userProfile = localUserProfileRepository.getUserProfile(
             key: userId ?? "",
           );
@@ -77,53 +82,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               AuthStateLoggedOut(isLoading: false),
             );
           }
-          // final file = await UtilsDownloadFile.getFile(userProfile!.id!);
-          // userPresence =
-          //     await remoteUserPresenceRepository.getUserPresenceById(
-          //   userID: userProfile!.id!,
-          // );
-          // if (await file.exists()) {
-          //   urlUserProfile = await remoteStorageRepository.getFile(
-          //     filePath: "userProfile",
-          //     fileName: userProfile!.id!,
-          //   );
-          // } else {
-          //   await remoteStorageRepository.uploadFile(
-          //     file: File(getCurrentUser.photoURL!),
-          //     filePath: "userProfile",
-          //     fileName: userProfile!.id!,
-          //   );
-          //   // urlUserProfile = await UtilsDownloadFile.downloadFile(
-          //   //   getCurrentUser.photoURL!,
-          //   //   userProfile!.id!,
-          //   // );
-          //   // urlUserProfile = await remoteStorageRepository.getFile(
-          //   //   filePath: "userProfile",
-          //   //   fileName: userProfile!.id!,
-          //   // );
-          // }
 
-          // const userProfilePathName = "userProfile";
+          var urlImage = await localStorageRepository.getFile(
+            fileName: userProfile!.id!,
+          );
 
-          // final getUrlImageFromStorage =
-          //     await remoteStorageRepository.getFile(
-          //   filePath: userProfilePathName,
-          //   fileName: userProfile!.id!,
-          // );
+          urlUserProfile.urlImage = urlImage;
+          urlUserProfile.typeImage = TypeImage.local;
 
-          // if (getUrlImageFromStorage == null) {
-          //   await remoteStorageRepository.uploadFile(
-          //     filePath: userProfilePathName,
-          //     fileName: getCurrentUser.uid,
-          //     file: File(
-          //       getCurrentUser.photoURL ?? "",
-          //     ),
-          //   );
-          // }
+          if (urlImage == null) {
+            urlImage = await remoteStorageRepository.getFile(
+              filePath: "userProfile",
+              fileName: userProfile!.id!,
+            );
+            await localStorageRepository.uploadFile(
+              fileName: userProfile!.id!,
+              remotePath: urlImage ?? "",
+            );
+            urlUserProfile.urlImage = urlImage;
+            urlUserProfile.typeImage = TypeImage.remote;
+          }
+
           emit(
             AuthStateLoggedIn(
               isLoading: false,
-              urlUserProfile: urlUserProfile,
+              urlImage: urlUserProfile,
               userProfile: userProfile!,
             ),
           );
@@ -165,12 +148,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                     ),
                   );
             }
-            // await localUserProfileRepository.setUserProfile(
-            //   userProfile: userProfile!,
-            // );
-            // userProfile = localUserProfileRepository.getUserProfile(
-            //   key: getCurrentUser.uid,
-            // );
+            userProfile =
+                await remoteUserProfileRepository.getUserProfileByIdAsync(
+              userID: getCurrentUser.uid,
+            );
             await sharedPreferences.setString(
               "userId",
               userProfile!.id!,
@@ -178,36 +159,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             await localUserProfileRepository.createUserProfile(
               userProfile: userProfile!,
             );
-            // check if userProfile null will be create
-            // if (userProfile == null) {
-            //   await remoteUserProfileRepository.createUserProfile(
-            //     user: getCurrentUser,
-            //   );
-            // }
 
-            //get data userProfile again after created
-            // streamUserProfile =
-            //     await remoteUserProfileRepository.getUserProfileById(
-            //   userID: getCurrentUser.uid,
-            // );
+            var urlImage = await remoteStorageRepository.getFile(
+              filePath: "userProfile",
+              fileName: userProfile!.id!,
+            );
 
-            // const userProfilePathName = "userProfile";
+            if (urlImage == null) {
+              await remoteStorageRepository.uploadFile(
+                file: File(getCurrentUser.photoURL!),
+                filePath: "userProfile",
+                fileName: userProfile!.id!,
+              );
+            }
+            urlImage = await remoteStorageRepository.getFile(
+              filePath: "userProfile",
+              fileName: userProfile!.id!,
+            );
 
-            // final getUrlImageFromStorage =
-            //     await remoteStorageRepository.getFile(
-            //   filePath: userProfilePathName,
-            //   fileName: userProfile!.id!,
-            // );
+            await localStorageRepository.uploadFile(
+              fileName: userProfile!.id!,
+              remotePath: urlImage ?? "",
+            );
 
-            // if (getUrlImageFromStorage == null) {
-            //   await remoteStorageRepository.uploadFile(
-            //     filePath: userProfilePathName,
-            //     fileName: getCurrentUser.uid,
-            //     file: File(
-            //       getCurrentUser.photoURL ?? "",
-            //     ),
-            //   );
-            // }
+            urlUserProfile.urlImage = urlImage;
+            urlUserProfile.typeImage = TypeImage.remote;
+
             if (userProfile == null) {
               emit(
                 AuthStateLoggedOut(
@@ -215,11 +192,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                 ),
               );
             }
+
             if (userProfile != null) {
               emit(
                 AuthStateLoggedIn(
                   isLoading: false,
-                  urlUserProfile: urlUserProfile,
+                  urlImage: urlUserProfile,
                   userProfile: userProfile!,
                 ),
               );
@@ -260,7 +238,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(
             AuthStateLoggedIn(
               isLoading: false,
-              urlUserProfile: urlUserProfile,
+              urlImage: urlUserProfile,
               userProfile: userProfile!,
             ),
           );

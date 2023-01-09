@@ -69,7 +69,9 @@ class _AudioMessasgeState extends State<AudioMessasge> {
               if (isPlaying) {
                 await audioPlayer.pause();
               } else {
-                await audioPlayer.play(UrlSource(widget.urlAudio),);
+                await audioPlayer.play(
+                  UrlSource(widget.urlAudio),
+                );
               }
             },
             child: Icon(

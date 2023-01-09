@@ -10,6 +10,7 @@ import '../../StateManager/provider/conversation_provider.dart';
 import '../../StateManager/provider/storage_provider.dart';
 import '../../StateManager/provider/user_presence_provider.dart';
 import '../../StateManager/provider/user_profile_provider.dart';
+import '../../models/url_image.dart';
 import '../../models/user_profile.dart';
 import '../../widget/animated_switcher_widget.dart';
 import 'components/body_conversation_screen.dart';
@@ -21,7 +22,7 @@ class ConversationScreen extends StatefulWidget {
     required this.urlUserProfile,
   }) : super(key: key);
   final UserProfile userProfile;
-  final String? urlUserProfile;
+  final UrlImage urlUserProfile;
   @override
   State<ConversationScreen> createState() => _ConversationScreenState();
 }

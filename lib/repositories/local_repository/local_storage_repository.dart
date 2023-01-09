@@ -1,32 +1,50 @@
+import 'dart:developer';
 import 'dart:io';
 
-import 'package:file_picker/src/platform_file.dart';
-import 'package:firebase_storage_platform_interface/src/settable_metadata.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
-import '../interface_repository/storage_repository.dart';
-
-class LocalStorageRepository implements StorageRepository {
-  @override
-  Future<String?> getFile(
-      {required String filePath, required String fileName}) {
-    // TODO: implement getFile
-    throw UnimplementedError();
+class LocalStorageRepository {
+  Future<String?> getFile({
+    required String fileName,
+  }) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/$fileName';
+      File file = File(filePath);
+      if (await file.exists()) {
+        return file.path;
+      }
+      return null;
+    } catch (e) {
+      log(
+        e.toString(),
+      );
+      return null;
+    }
   }
 
-  @override
-  Future<void> uploadMultipleFile(
-      {required List<PlatformFile> listFile, required String path}) {
-    // TODO: implement uploadMultipleFile
-    throw UnimplementedError();
-  }
+  Future<void> uploadFile({
+    required String fileName,
+    required String remotePath,
+  }) async {
+    final directory = await getApplicationDocumentsDirectory();
+    
+    final filePath = '${directory.path}/$fileName';
 
-  @override
-  Future<bool> uploadFile(
-      {required File file,
-      required String filePath,
-      required String fileName,
-      SettableMetadata? settableMetaData}) {
-    // TODO: implement uploadFile
-    throw UnimplementedError();
+    if (filePath.isEmpty) {
+      return;
+    }
+
+    final response = await http.get(
+      Uri.parse(
+        remotePath,
+      ),
+    );
+    if (response.statusCode == 200) {
+      File file = File(filePath);
+
+      await file.writeAsBytes(response.bodyBytes);
+    }
   }
 }

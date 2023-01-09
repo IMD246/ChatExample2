@@ -24,12 +24,18 @@ class BodySettingScreen extends StatelessWidget {
   final UserProfile userProfile;
   @override
   Widget build(BuildContext context) {
+    final settingBloc = context.read<SettingBloc>();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
         leading: BackButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(
+              [
+                settingBloc.userProfile.fullName,
+                settingBloc.urlImage,
+              ],
+            );
           },
         ),
         title: textWidget(
@@ -54,20 +60,16 @@ class BodySettingScreen extends StatelessWidget {
                       userProfile: userProfile,
                     ),
                   );
-
-              if (context.read<AuthBloc>().firebaseAuthProvider.currentUser ==
-                  null) {
-                Navigator.of(context).pop();
-              }
+              Navigator.of(context).pop();
             },
           ),
           SizedBox(height: 16.h),
           SettingItemMenuButton(
             text: context.loc.update_information,
             press: () {
-              context.read<SettingBloc>().add(
-                    GoToUpdateInfoSettingEvent(),
-                  );
+              settingBloc.add(
+                GoToUpdateInfoSettingEvent(),
+              );
             },
           ),
         ],

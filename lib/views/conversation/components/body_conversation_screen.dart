@@ -4,10 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 import '../../../StateManager/bloc/conversationBloc/conversation_bloc.dart';
+import '../../../StateManager/bloc/conversationBloc/conversation_event.dart';
 import '../../../extensions/localization.dart';
 import '../../../helpers/navigation/helper_navigation.dart';
 import '../../../models/conversation.dart';
+import '../../../models/url_image.dart';
 import '../../../models/user_profile.dart';
+import '../../../widget/image_file_widget.dart';
 import '../../../widget/observer.dart';
 import '../../searchChat/search_chat_page.dart';
 import '../../setting/components/setting_screen.dart';
@@ -20,7 +23,7 @@ class BodyConversationScreen extends StatelessWidget {
     required this.urlUserProfile,
   });
   final UserProfile userProfile;
-  final String? urlUserProfile;
+  final UrlImage urlUserProfile;
   @override
   Widget build(BuildContext context) {
     final statusConnection = Provider.of<bool>(context);
@@ -35,20 +38,29 @@ class BodyConversationScreen extends StatelessWidget {
               context: context,
               widget: SettingScreen(
                 userProfile: userProfile,
+                urlImage: urlUserProfile,
               ),
+            ).then(
+              (value) {
+                if (value != null) {
+                  conversationBloc.userProfile.fullName = value[0];
+                  conversationBloc.urlUserProfile = value[1];
+                  conversationBloc.add(
+                    InitializeConversationEvent(),
+                  );
+                }
+              },
             );
-            // .then(
-            //   (value) {
-            //     if (value != null) {
-            //       chatBLoc.userProfile.fullName = value;
-            //     }
-            //   },
-            // );
           },
-          child: circleImageWidget(
-            urlImage: urlUserProfile ?? "https://i.stack.imgur.com/l60Hf.png",
-            radius: 20.h,
-          ),
+          child: urlUserProfile.typeImage == TypeImage.remote
+              ? circleImageWidget(
+                  urlImage: urlUserProfile.urlImage ??
+                      "https://i.stack.imgur.com/l60Hf.png",
+                  radius: 20.h,
+                )
+              : ImageFileWidget(
+                  urlImage: urlUserProfile.urlImage ?? "",
+                ),
         ),
         title: textWidget(
           text: context.loc.chat,

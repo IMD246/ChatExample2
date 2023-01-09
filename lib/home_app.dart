@@ -31,7 +31,7 @@ class _HomeAppState extends State<HomeApp> {
 
   @override
   Widget build(BuildContext context) {
-    final value = Provider.of<ConfigAppProvider>(context);
+    final configAppProvider = Provider.of<ConfigAppProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
     final userProfileProvider = Provider.of<UserProfileProvider>(context);
@@ -45,14 +45,16 @@ class _HomeAppState extends State<HomeApp> {
             userPresenceProvider.remoteUserPresenceRepository,
         remoteUserProfileRepository:
             userProfileProvider.remoteUserProfileRepository,
-        tokenMessaging: value.deviceToken ?? "",
+        tokenMessaging: configAppProvider.deviceToken ?? "",
         localUserProfileRepository:
-            userProfileProvider.localUserProfileRepository, sharedPreferences: value.sharedPref,
+            userProfileProvider.localUserProfileRepository,
+        sharedPreferences: configAppProvider.sharedPref,
+        localStorageRepository: storageProvider.localStorageRepository,
       )..add(
           AuthEventInitialize(),
         ),
       child: MaterialApp(
-        navigatorKey: value.navigatorKey,
+        navigatorKey: configAppProvider.navigatorKey,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: languageProvider.locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
